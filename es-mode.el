@@ -3,6 +3,7 @@
 ;; Copyright (C) 2014 Matthew Lee Hinman
 
 ;; Author: Lee Hinman <lee [at] writequit [dot] org>
+;; URL: http://www.github.com/dakrone/es-mode
 ;; Version: 1.0.0
 ;; Keywords: elasticsearch
 
