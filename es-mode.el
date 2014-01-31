@@ -56,9 +56,8 @@
 
 (defconst es-font-lock-keywords-3
   (append es-font-lock-keywords-2
-          (list
-           '("\\(FIXME\\)" . font-lock-constant-face)))
-  "Balls-out highlighting in ES mode")
+          (list))
+  "Other highlighting in ES mode")
 
 (defvar es-font-lock-keywords es-font-lock-keywords-3
   "Default highlighting expressions for ES mode")
