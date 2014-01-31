@@ -45,13 +45,13 @@
   "Keymap for ES major mode")
 
 (defconst es-top-level-fields '("aggregations" "aggs" "facets" "filter"
-                                "post_filter" "query")
+                                "post_filter" "query" "settings" "mappings")
   "Top-level query and filter containers")
 (defconst es-keywords '("fields" "from" "size")
   "Top-level fields supported by all queries")
 (defconst es-http-builtins '("DELETE" "GET" "OPTIONS" "PATCH" "POST" "PUT")
   "HTTP methods used by curl")
-(defconst es-parent-types '("and" "bool" "filtered" "not" "or")
+(defconst es-parent-types '("and" "bool" "filtered" "not" "or" "properties")
   "Compound queries that always contain additional queries or filters")
 (defconst es-query-types '("boosting" "common" "constant_score"
                            "custom_boost_factor" "custom_filters_score"
