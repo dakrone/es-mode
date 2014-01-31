@@ -1,4 +1,4 @@
-;;; es-mode.el --- elasticsearch mode
+;;; es-mode.el --- A major mode for Elasticsearch curl/http scripts
 
 ;; Copyright (C) 2014 Matthew Lee Hinman
 
