@@ -115,14 +115,15 @@
 ;;;###autoload
 (define-derived-mode es-mode prog-mode "ES"
   "Major mode for editing curl ES scripts, similar to both sh-mode and js-mode."
-  (setq mode-name "ES")
   (kill-all-local-variables)
   (set-syntax-table es-mode-syntax-table)
   (use-local-map es-mode-map)
   (set (make-local-variable 'font-lock-defaults) '(es-font-lock-keywords))
   (set (make-local-variable 'indent-line-function) 'es-indent-line)
   (setq-local comment-start "# ")
-  (setq-local comment-start-skip "#+[\t ]*"))
+  (setq-local comment-start-skip "#+[\t ]*")
+  (setq mode-name "ES")
+  (setq major-mode 'es-mode))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.es\\'" . es-mode))
