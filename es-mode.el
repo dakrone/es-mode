@@ -56,7 +56,8 @@
 
 (defconst es-font-lock-keywords-3
   (append es-font-lock-keywords-2
-          (list))
+          (list
+           '("\\<\\(#.*\\)\\>" . font-lock-comment-face)))
   "Other highlighting in ES mode")
 
 (defvar es-font-lock-keywords es-font-lock-keywords-3
@@ -73,8 +74,7 @@
 (defvar es-mode-syntax-table
   (let ((st (make-syntax-table)))
     (modify-syntax-entry ?_ "w" st)
-    (modify-syntax-entry ?/ ". 124b" st)
-    (modify-syntax-entry ?* ". 23" st)
+    (modify-syntax-entry ?# "< b" st)
     (modify-syntax-entry ?\n "> b" st)
     st)
   "Syntax table for ES mode.")
@@ -165,6 +165,8 @@
   (set (make-local-variable 'indent-line-function) 'es-indent-line)
   (setq major-mode 'es-mode)
   (setq mode-name "ES")
+  (setq-local comment-start "# ")
+  (setq-local comment-start-skip "#+[\t ]*")
   (run-hooks 'es-mode-hook))
 
 ;; This is a terrible terrible hack right now

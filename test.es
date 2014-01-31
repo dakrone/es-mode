@@ -9,6 +9,7 @@ curl -XPOST 'localhost:9200/foo' -d'{
   "from": 0
 }'
 
+# another comment
 curl -XDELETE 'localhost:9200/foo' -d'{
   "query": {
     "filtered": {
@@ -20,7 +21,7 @@ curl -XDELETE 'localhost:9200/foo' -d'{
   }
 }'
 
-
+## this is a comment
 "function_score": {
   "query": {"term": {"category": "budget"}},
   "functions": [
