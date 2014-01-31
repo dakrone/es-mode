@@ -96,7 +96,7 @@
   "Highlighting expressions for ES mode")
 
 (defun es-indent-line ()
-  "Indent current line as ES code"
+  "Indent current line as ES code. Uses the same indention as js-mode."
   (interactive)
   (beginning-of-line)
   (js-indent-line)
