@@ -43,25 +43,12 @@
     map)
   "Keymap for ES major mode")
 
-(defconst es-font-lock-keywords-1
+(defconst es-font-lock-keywords
   (list
-   '("'\\(.+?\\)'" . font-lock-string-face))
-  "Minimal highlighting expressions for ES mode")
-
-(defconst es-font-lock-keywords-2
-  (append es-font-lock-keywords-1
-          (list
-           '("\\<\\(true\\|false\\)\\>" . font-lock-constant-face)))
-  "Additional Keywords to highlight in ES mode")
-
-(defconst es-font-lock-keywords-3
-  (append es-font-lock-keywords-2
-          (list
-           '("\\<\\(#.*\\)\\>" . font-lock-comment-face)))
-  "Other highlighting in ES mode")
-
-(defvar es-font-lock-keywords es-font-lock-keywords-3
-  "Default highlighting expressions for ES mode")
+   '("'\\(.+?\\)'" . font-lock-string-face)
+   '("\\<\\(true\\|false\\)\\>" . font-lock-constant-face)
+   '("\\<\\(#.*\\)\\>" . font-lock-comment-face))
+  "Highlighting expressions for ES mode")
 
 (defun es-indent-line ()
   "Indent current line as ES code"
@@ -176,7 +163,9 @@
   (require 'org-install)
   (org-babel-eval "/bin/sh" body))
 
-(provide 'es-mode)
-
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.es\\'" . es-mode))
+
+(provide 'es-mode)
+
+;;; es-mode.el ends here
