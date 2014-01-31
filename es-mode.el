@@ -49,7 +49,9 @@
   "Top-level query and filter containers")
 (defconst es-keywords '("fields" "from" "size")
   "Top-level fields supported by all queries")
-(defconst es-http-builtins '("DELETE" "GET" "OPTIONS" "PATCH" "POST" "PUT")
+(defconst es-warnings '("DELETE")
+  "HTTP methods that should be highlighted as warnings")
+(defconst es-http-builtins '("GET" "OPTIONS" "PATCH" "POST" "PUT")
   "HTTP methods used by curl")
 (defconst es-parent-types '("and" "bool" "filtered" "not" "or" "properties")
   "Compound queries that always contain additional queries or filters")
@@ -82,6 +84,9 @@
       ;; keywords for fields usually specified
       (,(concat "\"\\(" (regexp-opt es-keywords) "\\)\"")
        (1 font-lock-keyword-face t))
+      ;; builtins for warnings
+      (,(concat "-X\\(" (regexp-opt es-warnings) "\\)")
+       (1 font-lock-warning-face t))
       ;; builtins for REST
       (,(concat "-X\\(" (regexp-opt es-http-builtins) "\\)")
        (1 font-lock-builtin-face t))
