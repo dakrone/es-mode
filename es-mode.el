@@ -162,6 +162,13 @@
   (make-query-faces)
   (run-hooks 'es-mode-hook))
 
+;; This is a terrible terrible hack right now
+(defun org-babel-execute:es (body params)
+  "Execute a block of ES code with org-babel."
+  (message "executing ES source code block")
+  (require 'org-install)
+  (org-babel-eval "/bin/sh" body))
+
 (provide 'es-mode)
 
 ;;;###autoload
