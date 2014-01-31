@@ -4,6 +4,9 @@ Elasticsearch mode for Emacs
 Provides a major mode for editing ES curl examples. Better highlighting and
 indention than sh-mode or js-mode.
 
+It is intended to be a mixture of the three modes as well as mimicing some of
+the highlighting from the Sense chrome application.
+
 Installation
 ------------
 
