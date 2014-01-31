@@ -100,8 +100,8 @@
   (interactive)
   (beginning-of-line)
   (js-indent-line)
-  (if (bobp)
-      (indent-line-to 0)))
+  (when (bobp)
+    (indent-line-to 0)))
 
 (defvar es-mode-syntax-table
   (let ((st (make-syntax-table)))
