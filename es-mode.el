@@ -142,9 +142,8 @@
 (font-lock-add-keywords 'es-mode '(("\"\\(statistical\\)\"" 1 'font-lock-function-name-face t)))
 (font-lock-add-keywords 'es-mode '(("\"\\(terms_stats\\)\"" 1 'font-lock-function-name-face t)))
 
-(defun es-mode ()
-  "Major mode for editing ES files"
-  (interactive)
+(define-derived-mode es-mode prog-mode "ES"
+  "Major mode for editing curl ES scripts, similar to both sh-mode and js-mode."
   (kill-all-local-variables)
   (set-syntax-table es-mode-syntax-table)
   (use-local-map es-mode-map)
