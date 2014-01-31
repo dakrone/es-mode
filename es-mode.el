@@ -11,8 +11,9 @@
 
 ;;; Commentary:
 
-;; Provides a major mode for editing Elasticsearch examples. Inherits the
-;; indention from js-mode.
+;; Provides a major mode for editing Elasticsearch examples. A mix between
+;; sh-mode and js-mode that highlights queries, filters and builtins for
+;; writing ES shell scripts.
 
 ;;; License:
 
