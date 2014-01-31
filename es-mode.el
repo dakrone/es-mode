@@ -124,13 +124,6 @@
   (setq-local comment-start-skip "#+[\t ]*")
   (run-hooks 'es-mode-hook))
 
-;; This is a terrible terrible hack right now
-(defun org-babel-execute:es (body params)
-  "Execute a block of ES code with org-babel."
-  (message "executing ES source code block")
-  (require 'org-install)
-  (org-babel-eval "/bin/sh" body))
-
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.es\\'" . es-mode))
 

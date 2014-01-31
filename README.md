@@ -26,6 +26,32 @@ See `test.es`, here's a screenshot from my theme:
 
 ![picture of es-mode](http://writequit.org/files/es-mode.png)
 
+Org-babel support
+-----------------
+
+One of the main reasons I started this was better highlighting and indention for
+org-babel. So add the snippet below to your .emacs to be able to hit `C-c C-c`
+and execute blocks like:
+
+```
+#+BEGIN_SRC es
+curl -XPOST 'localhost:9200/_search' -d'{
+  "query": {
+    "match_all": {}
+  }
+}'
+#+END_SRC
+```
+
+Put into your `~/.emacs.d/init.el`:
+
+```elisp
+(defun org-babel-execute:es (body params)
+  "Execute a block of ES code with org-babel."
+  (message "executing ES source code block")
+  (org-babel-eval "/bin/sh" body))
+```
+
 Feedback
 ========
 
