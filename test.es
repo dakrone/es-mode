@@ -51,6 +51,20 @@ curl -XDELETE 'localhost:9200/foo' -d'{
   }
 }'
 
+curl -XPOST 'localhost:9200/decide' -d'{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  },
+  "mappings": {
+    "doc": {
+      "properties": {
+        "body": {"type": "string"}
+      }
+    }
+  }
+}'
+
 "function_score": {
   "query": {"term": {"category": "budget"}},
   "functions": [
