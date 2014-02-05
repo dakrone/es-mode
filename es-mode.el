@@ -122,6 +122,15 @@
     st)
   "Syntax table for ES mode.")
 
+(defun es-company-backend (command &optional arg &rest ign)
+  "A `company-backend' for es-queries and facets."
+  (case command
+    ('prefix (company-grab-symbol))
+    ('candidates
+     (all-completions
+      arg
+      (append es-query-types es-facet-types es-parent-types)))))
+
 ;;;###autoload
 (define-derived-mode es-mode prog-mode "ES"
   "Major mode for editing curl ES scripts, similar to both sh-mode and js-mode."
@@ -130,6 +139,8 @@
   (use-local-map es-mode-map)
   (set (make-local-variable 'font-lock-defaults) '(es-font-lock-keywords))
   (set (make-local-variable 'indent-line-function) 'es-indent-line)
+  (when (boundp 'company-backends)
+    (add-to-list 'company-backends 'es-company-backend))
   (setq-local comment-start "# ")
   (setq-local comment-start-skip "#+[\t ]*")
   (setq mode-name "ES")
