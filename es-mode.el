@@ -99,7 +99,11 @@
        (1 font-lock-function-name-face t))
       ;; facet types (leaf nodes)
       (,(concat "\"\\(" (regexp-opt es-facet-types) "\\)\"")
-       (1 font-lock-function-name-face t))))
+       (1 font-lock-function-name-face t))
+      ;; Highlight shell variables
+      ("\\$\\({#?\\)?\\([[:alpha:]_][[:alnum:]_]*\\|[-#?@!]\\)"
+       (2 font-lock-variable-name-face))
+      ))
   "Highlighting expressions for ES mode")
 
 (defun es-indent-line ()
