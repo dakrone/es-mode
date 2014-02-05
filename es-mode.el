@@ -129,7 +129,8 @@
     ('candidates
      (all-completions
       arg
-      (append es-query-types es-facet-types es-parent-types)))))
+      (append es-top-level-fields es-query-types es-facet-types
+              es-parent-types es-keywords)))))
 
 ;;;###autoload
 (define-derived-mode es-mode prog-mode "ES"
