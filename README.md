@@ -1,5 +1,4 @@
-Elasticsearch mode for Emacs
-============================
+## Elasticsearch mode for Emacs
 
 Provides a major mode for editing ES curl examples. Better highlighting and
 indention than sh-mode or js-mode.
@@ -7,13 +6,16 @@ indention than sh-mode or js-mode.
 It is intended to be a mixture of the three modes as well as mimicing some of
 the highlighting from the Sense chrome application.
 
-Installation
-------------
+You can also think of it as
+[Sense](https://chrome.google.com/webstore/detail/sense/doinijnbnggojdlcjifpdckfokbbfpbo?hl=en)-envy
+for Emacs users.
 
-You should be able to install this as a package from MELPA
+### Installation
 
-Usage
------
+You should be able to install this as a package from MELPA. It's not currently
+on marmalade until I get a stable release I'm happy with.
+
+### Usage
 
 ```elisp
 (require 'es-mode)
@@ -22,15 +24,21 @@ Usage
 
 Or open a file with a `.es` extension.
 
-Example
--------
+### Features
+
+- Highlighting for builtin queries, facets, aggregations, special paramaters
+- Highlighting for curl's HTTP (`-XPOST`) flags
+- A [company-mode](http://company-mode.github.io/) backend for completing ES
+  queries
+- Better indenting than sh-mode (indents like js-mode)
+
+### Example
 
 See `test.es`, here's a screenshot from my theme:
 
 ![picture of es-mode](http://writequit.org/files/es-mode.png)
 
-Org-babel support
------------------
+### Org-babel support
 
 One of the main reasons I started this was better highlighting and indention for
 org-babel. So add the snippet below to your .emacs:
@@ -57,8 +65,7 @@ curl -XPOST 'localhost:9200/_search' -d'{
 #+END_SRC
 ```
 
-Feedback
---------
+### Feedback
 
 This is my first major mode for Emacs, feedback is welcome, especially pull
 requests that show me what I'm doing wrong.
