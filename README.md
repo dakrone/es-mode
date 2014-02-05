@@ -7,7 +7,7 @@ It is intended to be a mixture of the three modes as well as mimicing some of
 the highlighting from the Sense chrome application.
 
 You can also think of it as
-[Sense](http://www.elasticsearch.org/guide/en/marvel/current/index.html#_sense)-envy
+[Marvel's Sense](http://www.elasticsearch.org/guide/en/marvel/current/index.html#_sense)-envy
 for Emacs users.
 
 ### Installation
