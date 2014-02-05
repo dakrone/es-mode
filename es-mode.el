@@ -126,7 +126,10 @@
 (defun es-company-backend (command &optional arg &rest ign)
   "A `company-backend' for es-queries and facets."
   (case command
-    ('prefix (company-grab-symbol))
+    ('prefix (let ((sym (company-grab-symbol)))
+               (if (string-match "\"\\(.*\\)\"?" sym)
+                   (match-string 1 sym)
+                 sym)))
     ('candidates
      (all-completions
       arg
