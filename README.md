@@ -10,11 +10,7 @@ the highlighting from the Sense chrome application.
 Installation
 ------------
 
-Manually install this for now, until it's available as a package somewhere:
-
-```
-(load-file "/path/to/es-mode/es-mode.el")
-```
+You should be able to install this as a package from MELPA
 
 Usage
 -----
