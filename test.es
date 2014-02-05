@@ -39,6 +39,8 @@ curl -XPOST 'localhost:9200/foo/_search' -d'{
   }
 }'
 
+VAR=`echo foo`
+$VAR
 # another comment
 curl -XDELETE 'localhost:9200/foo' -d'{
   "query": {
