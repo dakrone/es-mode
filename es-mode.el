@@ -145,7 +145,7 @@
   (set (make-local-variable 'font-lock-defaults) '(es-font-lock-keywords))
   (set (make-local-variable 'indent-line-function) 'es-indent-line)
   (when (boundp 'company-backends)
-    (add-to-list 'company-backends 'es-company-backend))
+    (add-to-list 'company-backends 'es-company-backend t))
   (setq-local comment-start "# ")
   (setq-local comment-start-skip "#+[\t ]*")
   (setq mode-name "ES")
