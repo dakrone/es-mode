@@ -12,8 +12,17 @@ for Emacs users.
 
 ### Installation
 
-You should be able to install this as a package from MELPA. It's not currently
-on marmalade until I get a stable release I'm happy with.
+`es-mode` is available in the MELPA repository. Do this, if MELPA isn't already in
+your sources:
+
+```elisp
+(require 'package)
+(add-to-list 'package-archives
+             '("MELPA" . "http://melpa.milkbox.net/packages/" ))
+```
+
+Then run `M-x package-refresh-contents` to load the contents of the new
+repository, and `M-x package-install RET es-mode RET` to install `es-mode`.
 
 ### Usage
 
