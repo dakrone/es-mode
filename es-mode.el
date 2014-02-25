@@ -89,10 +89,10 @@
       (,(concat "\"\\(" (regexp-opt es-keywords) "\\)\"")
        (1 font-lock-keyword-face t))
       ;; builtins for warnings
-      (,(concat "-X\\(" (regexp-opt es-warnings) "\\)")
+      (,(concat " -.*X\\(" (regexp-opt es-warnings) "\\)")
        (1 font-lock-warning-face t))
       ;; builtins for REST
-      (,(concat "-X\\(" (regexp-opt es-http-builtins) "\\)")
+      (,(concat " -.*X\\(" (regexp-opt es-http-builtins) "\\)")
        (1 font-lock-builtin-face t))
       ;; types (parent queries containing sub queries)
       (,(concat "\"\\(" (regexp-opt es-parent-types) "\\)\"")
