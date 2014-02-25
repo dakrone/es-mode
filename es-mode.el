@@ -46,10 +46,10 @@
 
 (defvar es-top-level-fields
   '("aggregations" "aggs" "facets" "filter"
-    "post_filter" "query" "settings" "mappings")
+    "post_filter" "query")
   "Top-level query and filter containers")
 (defvar es-keywords
-  '("fields" "from" "size")
+  '("fields" "from" "size" "highlight")
   "Top-level fields supported by all queries")
 (defvar es-warnings
   '("DELETE")
@@ -58,7 +58,7 @@
   '("GET" "OPTIONS" "PATCH" "POST" "PUT")
   "HTTP methods used by curl")
 (defvar es-parent-types
-  '("and" "bool" "filtered" "not" "or" "properties")
+  '("and" "bool" "filtered" "not" "or" "properties" "mappings" "settings")
   "Compound queries that always contain additional queries or filters")
 (defvar es-query-types
   '("boosting" "common" "constant_score" "custom_boost_factor"
@@ -69,10 +69,12 @@
     "multi_match" "nested" "prefix" "query_string" "range" "regexp"
     "simple_query_string" "span_first" "span_multi_term" "span_near"
     "span_not" "span_or" "span_term" "term" "terms" "text" "top_children"
-    "wildcard")
+    "wildcard" "geo_distance" "geo_bbox")
   "Various leaf-type queries and filters")
 (defvar es-facet-types
-  '("date_histogram" "geo_distance" "histogram" "statistical" "terms_stats")
+  '("date_histogram" "geo_distance" "histogram" "statistical" "terms_stats"
+    "min" "max" "sum" "avg" "stats" "extended_stats" "value_count" "missing"
+    "geohash_grid" "script")
   "Leaf-type facets")
 
 (defconst es-font-lock-keywords
