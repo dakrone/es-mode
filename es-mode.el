@@ -1,19 +1,19 @@
-;;; es-mode.el --- A major mode for Elasticsearch curl/http scripts
+;;; es-mode.el --- A major mode for editing and evaluating Elasticsearch-queries
 
 ;; Copyright (C) 2014 Matthew Lee Hinman
+;; Copyright (C) 2014 Bjarte Johansen
 
 ;; Author: Lee Hinman <lee@writequit.org>
 ;; URL: http://www.github.com/dakrone/es-mode
-;; Version: 1.0.0
+;; Version: 2.0.0
 ;; Keywords: elasticsearch
 
 ;; This file is not part of GNU Emacs.
 
 ;;; Commentary:
 
-;; Provides a major mode for editing Elasticsearch examples. A mix between
-;; sh-mode and js-mode that highlights queries, filters and builtins for
-;; writing ES shell scripts.
+;; Provides a major mode for editing and evaluating Elasticsearch
+;; queries.
 
 ;;; License:
 
@@ -35,7 +35,11 @@
 ;;; Code:
 
 (require 'js)
+(require 'url)
+(require 'url-util)
 
+(defvar es-results-buffer nil)
+(defvar es-result-response)
 
 (defvar es-top-level-fields
   '("aggregations" "aggs" "facets" "filter"
@@ -88,10 +92,10 @@
       (,(concat "\"\\(" (regexp-opt es-keywords) "\\)\"")
        (1 font-lock-keyword-face t))
       ;; builtins for warnings
-      (,(concat " -.*X\\(" (regexp-opt es-warnings) "\\)")
+      (,(concat "^\\s-*\\(" (regexp-opt es-warnings) "\\)")
        (1 font-lock-warning-face t))
       ;; builtins for REST
-      (,(concat " -.*X\\(" (regexp-opt es-http-builtins) "\\)")
+      (,(concat "^\\s-*\\(" (regexp-opt es-http-builtins) "\\)")
        (1 font-lock-builtin-face t))
       ;; types (parent queries containing sub queries)
       (,(concat "\"\\(" (regexp-opt es-parent-types) "\\)\"")
@@ -137,6 +141,77 @@
       (append es-top-level-fields es-query-types es-facet-types
               es-parent-types es-keywords)))))
 
+(defun es-result--handle-response (status &optional es-results-buffer)
+  "Handles the response from the server returns after sending a
+query. "
+  (let ((http-results-buffer (current-buffer)))
+    (set-buffer es-results-buffer)
+    (let ((buffer-read-only nil))
+      (insert-buffer-substring http-results-buffer)
+      (kill-buffer http-results-buffer)
+      (whitespace-cleanup)
+      (goto-char (point-min))
+      (when (string-match "^.* 200 OK$" (thing-at-point 'line))
+        (search-forward "\n\n")
+        (setq es-result-response
+              (buffer-substring (point-min) (point)))
+        (delete-region (point-min) (point))))
+    (setq mode-name "ES[finished]")))
+
+(defun es-query-region ()
+  "Submits the active region as a query to the specified
+endpoint. If the region is not active, the whole buffer is used."
+  (interactive)
+  (let ((beg (if (region-active-p) (region-beginning) (point-min)))
+        (end (if (region-active-p) (region-end) (point-max)))
+        (query-buffer (current-buffer))
+        (url-request-extra-headers
+         '(("Content-Type" . "application/x-www-form-urlencoded")))
+        url-request-method
+        url-request-data
+        url)
+    (with-temp-buffer
+      (insert-buffer-substring query-buffer beg end)
+      (whitespace-cleanup)
+      (goto-char (point-min))
+      (when (re-search-forward "^\\s-*\\(\\sw+\\)\\s-*\\(.*\\)")
+        (setq url-request-method (match-string 1))
+        (setq url (match-string 2))
+        (forward-char 1)
+        (setq url-request-data
+              (buffer-substring-no-properties (point) (point-max)))))
+    (unless (buffer-live-p es-results-buffer)
+      (setq es-results-buffer
+            (generate-new-buffer
+             (format "*ES: %s*" (buffer-name)))))
+    (save-current-buffer
+      (set-buffer es-results-buffer)
+      (es-result-mode)
+      (setq buffer-read-only nil)
+      (delete-region (point-min) (point-max))
+      (setq buffer-read-only t))
+    (url-retrieve url 'es-result--handle-response (list es-results-buffer))
+    (view-buffer-other-window es-results-buffer)
+    (other-window -1)))
+
+(defun es-result-show-response ()
+  "Shows the header of the response from the server in the
+  minibuffer."
+  (interactive)
+  (message es-result-response))
+
+(define-derived-mode es-result-mode text-mode "ES[waiting]"
+  "Major mode to hold the result from a query to elastic search end point.
+\\{es-result-mode-map}"
+  ;; Use es-mode syntax-table
+  (set-syntax-table es-mode-syntax-table)
+  ;; Use es-mode font-lock
+  (setq font-lock-defaults '(es-font-lock-keywords))
+  (make-local-variable 'es-result-response)
+
+  ;; Key maps
+  (define-key es-result-mode-map (kbd "C-c C-r") 'es-result-show-response))
+
 ;; Compatibility with Emacs < 24
 (defalias 'es-parent-mode
   (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
@@ -152,8 +227,10 @@
   (setq-local comment-start "# ")
   (setq-local comment-start-skip "#+[\t ]*")
 
+  (make-local-variable 'es-results-buffer)
+
   ;; Key maps
-  (define-key es-mode-map (kbd "C-j") 'newline-and-indent))
+  (define-key es-mode-map (kbd "C-c C-c") 'es-query-region))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.es\\'" . es-mode))
