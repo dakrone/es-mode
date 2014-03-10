@@ -138,8 +138,12 @@
       (append es-top-level-fields es-query-types es-facet-types
               es-parent-types es-keywords)))))
 
+;; Compatibility with Emacs < 24
+(defalias 'es-parent-mode
+  (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
+
 ;;;###autoload
-(define-derived-mode es-mode prog-mode "ES"
+(define-derived-mode es-mode es-parent-mode "ES"
   "Major mode for editing curl ES scripts, similar to both sh-mode and js-mode."
   (kill-all-local-variables)
   (set-syntax-table es-mode-syntax-table)
