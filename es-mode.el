@@ -36,30 +36,28 @@
 
 (require 'js)
 
-(defvar es-mode-hook nil)
-
-(defvar es-mode-map
-  (let ((map (make-keymap)))
-    (define-key map "\C-j" 'newline-and-indent)
-    map)
-  "Keymap for ES major mode")
 
 (defvar es-top-level-fields
   '("aggregations" "aggs" "facets" "filter"
     "post_filter" "query")
   "Top-level query and filter containers")
+
 (defvar es-keywords
   '("fields" "from" "size" "highlight")
   "Top-level fields supported by all queries")
+
 (defvar es-warnings
   '("DELETE")
   "HTTP methods that should be highlighted as warnings")
+
 (defvar es-http-builtins
   '("GET" "OPTIONS" "PATCH" "POST" "PUT")
   "HTTP methods used by curl")
+
 (defvar es-parent-types
   '("and" "bool" "filtered" "not" "or" "properties" "mappings" "settings")
   "Compound queries that always contain additional queries or filters")
+
 (defvar es-query-types
   '("boosting" "common" "constant_score" "custom_boost_factor"
     "custom_filters_score" "custom_score" "dismax" "function_score" "fuzzy"
@@ -71,6 +69,7 @@
     "span_not" "span_or" "span_term" "term" "terms" "text" "top_children"
     "wildcard" "geo_distance" "geo_bbox")
   "Various leaf-type queries and filters")
+
 (defvar es-facet-types
   '("date_histogram" "geo_distance" "histogram" "statistical" "terms_stats"
     "min" "max" "sum" "avg" "stats" "extended_stats" "value_count" "missing"
@@ -146,17 +145,15 @@
 (define-derived-mode es-mode es-parent-mode "ES"
   "Major mode for editing curl ES scripts, similar to both sh-mode and js-mode.
 \\{es-mode-map}"
-  (kill-all-local-variables)
-  (set-syntax-table es-mode-syntax-table)
-  (use-local-map es-mode-map)
   (set (make-local-variable 'font-lock-defaults) '(es-font-lock-keywords))
   (set (make-local-variable 'indent-line-function) 'es-indent-line)
   (when (boundp 'company-backends)
     (add-to-list 'company-backends 'es-company-backend t))
   (setq-local comment-start "# ")
   (setq-local comment-start-skip "#+[\t ]*")
-  (setq mode-name "ES")
-  (setq major-mode 'es-mode))
+
+  ;; Key maps
+  (define-key es-mode-map (kbd "C-j") 'newline-and-indent))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.es\\'" . es-mode))
