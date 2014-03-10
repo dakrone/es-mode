@@ -144,7 +144,8 @@
 
 ;;;###autoload
 (define-derived-mode es-mode es-parent-mode "ES"
-  "Major mode for editing curl ES scripts, similar to both sh-mode and js-mode."
+  "Major mode for editing curl ES scripts, similar to both sh-mode and js-mode.
+\\{es-mode-map}"
   (kill-all-local-variables)
   (set-syntax-table es-mode-syntax-table)
   (use-local-map es-mode-map)
