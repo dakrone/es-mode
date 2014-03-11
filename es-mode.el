@@ -122,14 +122,6 @@
       ))
   "Highlighting expressions for ES mode")
 
-(defvar es-mode-syntax-table
-  (let ((st (make-syntax-table)))
-    (modify-syntax-entry ?_ "w" st)
-    (modify-syntax-entry ?# "< b" st)
-    (modify-syntax-entry ?\n "> b" st)
-    st)
-  "Syntax table for ES mode.")
-
 (defun es-company-backend (command &optional arg &rest ign)
   "A `company-backend' for es-queries and facets."
   (case command
@@ -228,6 +220,19 @@ endpoint. If the region is not active, the whole buffer is used."
     (js-indent-line))
   (when (bobp)
     (indent-line-to 0)))
+
+(defvar es-mode-syntax-table
+  (let ((st (make-syntax-table)))
+    ;; Set _ to a word character so it can be used inside words.
+    (modify-syntax-entry ?_ "w" st)
+    ;; / is a punctuation character and is the first and second
+    ;; character of a two letter comment starter.
+    (modify-syntax-entry ?/ ". 12" st)
+    ;; newline is the end of a comment.
+    (modify-syntax-entry ?\n ">" st)
+    st)
+  "Syntax table for ES mode.")
+
 ;; Compatibility with Emacs < 24
 (defalias 'es-parent-mode
   (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
