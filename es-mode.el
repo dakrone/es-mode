@@ -90,38 +90,6 @@
     "geohash_grid" "script")
   "Leaf-type facets")
 
-(defconst es-font-lock-keywords
-  (eval-when-compile
-    `(("'\\(.+?\\)'" . font-lock-string-face)
-      ("\\<\\(true\\|false\\)\\>" . font-lock-constant-face)
-      ("\\<\\(#.*\\)\\>" . font-lock-comment-face)
-      ;; top-level fields containing leaf nodes
-      (,(concat "\"\\(" (regexp-opt es-top-level-fields) "\\)\"")
-       (1 font-lock-constant-face t))
-      ;; keywords for fields usually specified
-      (,(concat "\"\\(" (regexp-opt es-keywords) "\\)\"")
-       (1 font-lock-keyword-face t))
-      ;; builtins for warnings
-      (,(concat "^\\s-*\\(" (regexp-opt es-warnings) "\\)")
-       (1 font-lock-warning-face t))
-      ;; builtins for REST
-      (,(concat "^\\s-*\\(" (regexp-opt es-http-builtins) "\\)")
-       (1 font-lock-builtin-face t))
-      ;; types (parent queries containing sub queries)
-      (,(concat "\"\\(" (regexp-opt es-parent-types) "\\)\"")
-       (1 font-lock-type-face t))
-      ;; query types (leaf nodes)
-      (,(concat "\"\\(" (regexp-opt es-query-types) "\\)\"")
-       (1 font-lock-function-name-face t))
-      ;; facet types (leaf nodes)
-      (,(concat "\"\\(" (regexp-opt es-facet-types) "\\)\"")
-       (1 font-lock-function-name-face t))
-      ;; Highlight shell variables
-      ("\\$\\({#?\\)?\\([[:alpha:]_][[:alnum:]_]*\\|[-#?@!]\\)"
-       (2 font-lock-variable-name-face))
-      ))
-  "Highlighting expressions for ES mode")
-
 (defun es-company-backend (command &optional arg &rest ign)
   "A `company-backend' for es-queries and facets."
   (case command
@@ -220,6 +188,37 @@ endpoint. If the region is not active, the whole buffer is used."
     (js-indent-line))
   (when (bobp)
     (indent-line-to 0)))
+
+(defconst es-font-lock-keywords
+  (eval-when-compile
+    `(;; Strings
+      ("'\\(.+?\\)'" . font-lock-string-face)
+      ;; Booleans
+      (,(regexp-opt '("true" "false") 'word) . font-lock-constant-face)
+      ;; top-level fields containing leaf nodes
+      (,(concat "\"\\(" (regexp-opt es-top-level-fields) "\\)\"")
+       (1 font-lock-constant-face t))
+      ;; keywords for fields usually specified
+      (,(concat "\"\\(" (regexp-opt es-keywords) "\\)\"")
+       (1 font-lock-keyword-face t))
+      ;; builtins for warnings
+      (,(concat "^\\s-*\\(" (regexp-opt es-warnings) "\\)")
+       (1 font-lock-warning-face t))
+      ;; builtins for REST
+      (,(concat "^\\s-*\\(" (regexp-opt es-http-builtins) "\\)")
+       (1 font-lock-builtin-face t))
+      ;; types (parent queries containing sub queries)
+      (,(concat "\"\\(" (regexp-opt es-parent-types) "\\)\"")
+       (1 font-lock-type-face t))
+      ;; query types (leaf nodes)
+      (,(concat "\"\\(" (regexp-opt es-query-types) "\\)\"")
+       (1 font-lock-function-name-face t))
+      ;; facet types (leaf nodes)
+      (,(concat "\"\\(" (regexp-opt es-facet-types) "\\)\"")
+       (1 font-lock-function-name-face t))
+      ;; Comments
+      ("^.*?\\(//.*$\\)" (1 font-lock-comment-face t))))
+  "Highlighting expressions for ES mode")
 
 (defvar es-mode-syntax-table
   (let ((st (make-syntax-table)))
