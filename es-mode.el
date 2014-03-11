@@ -238,7 +238,7 @@ endpoint. If the region is not active, the whole buffer is used."
 
 ;;;###autoload
 (define-derived-mode es-mode es-parent-mode "ES"
-  "Major mode for editing curl ES scripts, similar to both sh-mode and js-mode.
+  "Major mode for editing and sending ES queries.
 \\{es-mode-map}"
   (set (make-local-variable 'font-lock-defaults) '(es-font-lock-keywords))
   (set (make-local-variable 'indent-line-function) 'es-indent-line)
