@@ -240,18 +240,23 @@ endpoint. If the region is not active, the whole buffer is used."
 (define-derived-mode es-mode es-parent-mode "ES"
   "Major mode for editing and sending ES queries.
 \\{es-mode-map}"
-  (set (make-local-variable 'font-lock-defaults) '(es-font-lock-keywords))
-  (set (make-local-variable 'indent-line-function) 'es-indent-line)
-  (when (boundp 'company-backends)
-    (add-to-list 'company-backends 'es-company-backend t))
+  ;; Font lock and indent
+  (setq-local font-lock-defaults '(es-font-lock-keywords))
+  (setq-local indent-line-function 'es-indent-line)
 
-  (make-local-variable 'es-results-buffer)
   ;; Comment dwim
   (setq-local comment-start "// ")
   (setq-local comment-start-skip "//+[\t ]*")
 
   ;; Key maps
-  (define-key es-mode-map (kbd "C-c C-c") 'es-query-region))
+  (define-key es-mode-map (kbd "C-c C-c") 'es-query-region)
+
+  ;; Local buffer for results
+  (make-local-variable 'es-results-buffer)
+
+  ;; If we have company-mode we use it.
+  (when (boundp 'company-backends)
+    (add-to-list 'company-backends 'es-company-backend t)))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.es\\'" . es-mode))
