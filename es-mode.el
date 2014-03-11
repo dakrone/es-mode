@@ -38,6 +38,15 @@
 (require 'url)
 (require 'url-util)
 
+(defgroup es nil
+  "Major mode for editing queries and querying Elasticsearch endpoints."
+  :group 'languages)
+
+(defcustom es-indent-offset 2
+  "Indentation offset for `es-mode'."
+  :group 'es
+  :type 'integer)
+
 (defvar es-results-buffer nil
   "Buffer local variable pointing to the buffer containing the
   results from the most recent query.")
@@ -112,14 +121,6 @@
        (2 font-lock-variable-name-face))
       ))
   "Highlighting expressions for ES mode")
-
-(defun es-indent-line ()
-  "Indent current line as ES code. Uses the same indention as js-mode."
-  (interactive)
-  (beginning-of-line)
-  (js-indent-line)
-  (when (bobp)
-    (indent-line-to 0)))
 
 (defvar es-mode-syntax-table
   (let ((st (make-syntax-table)))
@@ -217,6 +218,16 @@ endpoint. If the region is not active, the whole buffer is used."
   ;; Key maps
   (define-key es-result-mode-map (kbd "C-c C-r") 'es-result-show-response))
 
+(defun es-indent-line ()
+  "Indent current line as ES code. Uses the same indention as js-mode."
+  (interactive)
+  (beginning-of-line)
+  ;; Dynamically bind js-indent-level so we can have our own indent
+  ;; offset if we want to.
+  (let ((js-indent-level es-indent-offset))
+    (js-indent-line))
+  (when (bobp)
+    (indent-line-to 0)))
 ;; Compatibility with Emacs < 24
 (defalias 'es-parent-mode
   (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
