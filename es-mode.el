@@ -148,7 +148,14 @@ endpoint. If the region is not active, the whole buffer is used."
       (insert-buffer-substring query-buffer beg end)
       (whitespace-cleanup)
       (goto-char (point-min))
-      (when (re-search-forward "^\\s-*\\(\\sw+\\)\\s-*\\(.*\\)")
+      (when (re-search-forward
+             (concat "^\\s-*"
+                     (regexp-opt
+                      (concatenate 'list
+                                   es-http-builtins
+                                   es-warnings)
+                      'word)
+                     "\\s-+\\(.*\\)"))
         (setq url-request-method (match-string 1))
         (setq url (match-string 2))
         (forward-char 1)
