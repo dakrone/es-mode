@@ -244,10 +244,11 @@ endpoint. If the region is not active, the whole buffer is used."
   (set (make-local-variable 'indent-line-function) 'es-indent-line)
   (when (boundp 'company-backends)
     (add-to-list 'company-backends 'es-company-backend t))
-  (setq-local comment-start "# ")
-  (setq-local comment-start-skip "#+[\t ]*")
 
   (make-local-variable 'es-results-buffer)
+  ;; Comment dwim
+  (setq-local comment-start "// ")
+  (setq-local comment-start-skip "//+[\t ]*")
 
   ;; Key maps
   (define-key es-mode-map (kbd "C-c C-c") 'es-query-region))
