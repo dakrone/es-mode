@@ -38,8 +38,9 @@
 (require 'url)
 (require 'url-util)
 
-(defvar es-results-buffer nil)
-(defvar es-result-response)
+(defvar es-results-buffer nil
+  "Buffer local variable pointing to the buffer containing the
+  results from the most recent query.")
 
 (defvar es-top-level-fields
   '("aggregations" "aggs" "facets" "filter"
@@ -140,6 +141,10 @@
       arg
       (append es-top-level-fields es-query-types es-facet-types
               es-parent-types es-keywords)))))
+
+(defvar es-result-response nil
+  "The variable containing the response header from the result in
+  a result buffer.")
 
 (defun es-result--handle-response (status &optional es-results-buffer)
   "Handles the response from the server returns after sending a
