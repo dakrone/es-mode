@@ -1,4 +1,4 @@
-;;; es-mode.el --- A major mode for editing and evaluating Elasticsearch-queries
+;;; es-mode.el --- A major mode for editing Elasticsearch queries
 
 ;; Copyright (C) 2014 Matthew Lee Hinman
 ;; Copyright (C) 2014 Bjarte Johansen
@@ -12,8 +12,16 @@
 
 ;;; Commentary:
 
-;; Provides a major mode for editing and evaluating Elasticsearch
-;; queries.
+;; Provides a major mode for editing queries and sending them to an
+;; Elasticsearch endpoint.
+
+;;; Usage:
+
+;; Add to your Emacs config:
+;;  (add-to-list 'load-path "/path/to/es-mode-dir")
+;;  (autoload 'es-mode "es-mode.el"
+;;    "Major mode for editing Elasticsearch queries" t)
+;;  (add-to-list 'auto-mode-alist '("\\.es$" . es-mode))
 
 ;;; License:
 
@@ -39,7 +47,7 @@
 (require 'url-util)
 
 (defgroup es nil
-  "Major mode for editing queries and querying Elasticsearch endpoints."
+  "Major mode for editing Elasticsearch queries."
   :group 'languages)
 
 (defcustom es-indent-offset 2
@@ -238,7 +246,7 @@ endpoint. If the region is not active, the whole buffer is used."
 
 ;;;###autoload
 (define-derived-mode es-mode es-parent-mode "ES"
-  "Major mode for editing and sending ES queries.
+  "Major mode for editing Elasticsearch queries.
 \\{es-mode-map}"
   ;; Font lock and indent
   (setq-local font-lock-defaults '(es-font-lock-keywords))
