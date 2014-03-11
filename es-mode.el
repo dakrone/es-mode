@@ -211,15 +211,23 @@ endpoint. If the region is not active, the whole buffer is used."
       ;; top-level fields containing leaf nodes
       (,(concat "\"\\(" (regexp-opt es-top-level-fields) "\\)\"")
        (1 font-lock-constant-face t))
+      ;; repair font-locking for http://... turning into comment.
+      ("http:\\(//[^\"\n]+\\)" (1 font-lock-string-face t))
+      ;; builtins for warnings
+      (,(concat "^\\s-*\\("
+                (regexp-opt es-warnings)
+                "\\)\\s-+\\(http://[^[:space:]\n]+\\)")
+       (1 font-lock-warning-face t)
+       (2 font-lock-variable-name-face t))
+      ;; builtins for REST
+      (,(concat "^\\s-*\\("
+                (regexp-opt es-http-builtins)
+                "\\)\\s-+\\(http://[^[:space:]\n]+\\)")
+       (1 font-lock-builtin-face t)
+       (2 font-lock-variable-name-face t))
       ;; keywords for fields usually specified
       (,(concat "\"\\(" (regexp-opt es-keywords) "\\)\"")
        (1 font-lock-keyword-face t))
-      ;; builtins for warnings
-      (,(concat "^\\s-*\\(" (regexp-opt es-warnings) "\\)")
-       (1 font-lock-warning-face t))
-      ;; builtins for REST
-      (,(concat "^\\s-*\\(" (regexp-opt es-http-builtins) "\\)")
-       (1 font-lock-builtin-face t))
       ;; types (parent queries containing sub queries)
       (,(concat "\"\\(" (regexp-opt es-parent-types) "\\)\"")
        (1 font-lock-type-face t))
@@ -228,9 +236,7 @@ endpoint. If the region is not active, the whole buffer is used."
        (1 font-lock-function-name-face t))
       ;; facet types (leaf nodes)
       (,(concat "\"\\(" (regexp-opt es-facet-types) "\\)\"")
-       (1 font-lock-function-name-face t))
-      ;; Comments
-      ("^.*?\\(//.*$\\)" (1 font-lock-comment-face t))))
+       (1 font-lock-function-name-face t))))
   "Highlighting expressions for ES mode")
 
 (defvar es-mode-syntax-table
