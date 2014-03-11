@@ -206,9 +206,7 @@ endpoint. If the region is not active, the whole buffer is used."
 
 (defconst es-font-lock-keywords
   (eval-when-compile
-    `(;; Strings
-      ("'\\(.+?\\)'" . font-lock-string-face)
-      ;; Booleans
+    `(;; Booleans
       (,(regexp-opt '("true" "false") 'word) . font-lock-constant-face)
       ;; top-level fields containing leaf nodes
       (,(concat "\"\\(" (regexp-opt es-top-level-fields) "\\)\"")
@@ -239,6 +237,9 @@ endpoint. If the region is not active, the whole buffer is used."
   (let ((st (make-syntax-table)))
     ;; Set _ to a word character so it can be used inside words.
     (modify-syntax-entry ?_ "w" st)
+    ;; Set " and ' as string delimiters.
+    (modify-syntax-entry ?\" "\"" st)
+    (modify-syntax-entry ?' "\"" st)
     ;; / is a punctuation character and is the first and second
     ;; character of a two letter comment starter.
     (modify-syntax-entry ?/ ". 12" st)
