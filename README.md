@@ -1,6 +1,6 @@
 ## Elasticsearch mode for Emacs
 
-Provides a major mode for editing ES curl examples. Better highlighting and
+Provides a major mode for editing ES query examples. Better highlighting and
 indention than sh-mode or js-mode.
 
 It is intended to be a mixture of the three modes as well as mimicing some of
@@ -27,19 +27,22 @@ repository, and `M-x package-install RET es-mode RET` to install `es-mode`.
 ### Usage
 
 ```elisp
-(require 'es-mode)
-(es-mode)
+(add-to-list 'load-path "/path/to/es-mode-dir")
+(autoload 'es-mode "es-mode.el"
+  "Major mode for editing Elasticsearch queries" t)
+(add-to-list 'auto-mode-alist '("\\.es$" . es-mode))
 ```
 
-Or open a file with a `.es` extension.
+You can now open a file with an `.es` extension and `es-mode` will
+automatically load..
 
 ### Features
 
 - Highlighting for builtin queries, facets, aggregations, special paramaters
-- Highlighting for curl's HTTP (`-XPOST`) flags
 - A [company-mode](http://company-mode.github.io/) backend for completing ES
   queries
 - Better indenting than sh-mode (indents like js-mode)
+- Sending the queries as a http-request to Elasticsearch endpoints.
 
 ### Example
 
