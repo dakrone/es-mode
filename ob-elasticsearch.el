@@ -38,8 +38,7 @@
 
 (defvar org-babel-default-header-args:elasticsearch
   `((:url . ,es-default-url)
-    (:method . ,es-default-request-method)
-    (:pretty t))
+    (:method . ,es-default-request-method))
   "Default arguments for evaluating an elasticsearch query
 block.")
 
