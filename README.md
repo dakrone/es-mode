@@ -74,6 +74,10 @@ file:
 #+END_SRC
 ```
 
+org-mode uses the arguments `:url` and `:method` to know where and how
+to send a query. If they are not present org-mode will use
+`es-default-url` and `es-defaul-request-method` instead.
+
 ### Feedback
 
 This is my first major mode for Emacs, feedback is welcome, especially pull
