@@ -246,11 +246,11 @@ endpoint. If the region is not active, the whole buffer is used."
                 "Do you really want to request a DELETE?"
                 'font-lock-face 'font-lock-warning-face)))
       (unless (buffer-live-p es-results-buffer)
-        (setq es-results-buffer
-              (generate-new-buffer
-               (format "*ES: %s*" (buffer-name)))))
+        (with-current-buffer (setq es-results-buffer
+                                   (generate-new-buffer
+                                    (format "*ES: %s*" (buffer-name))))
+          (es-result-mode)))
       (with-current-buffer es-results-buffer
-        (es-result-mode)
         (setq buffer-read-only nil)
         (delete-region (point-min) (point-max))
         (setq buffer-read-only t))
