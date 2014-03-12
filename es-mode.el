@@ -55,9 +55,65 @@
   :group 'es
   :type 'integer)
 
+(defcustom es-default-url "http://localhost:9200/_search?pretty=true"
+  "The default URL of the Elasticsearch endpoint."
+  :group 'es
+  :type 'string)
+
+(defcustom es-prompt-url nil
+  "Non-nil means prompt user for requested URL on each query
+  evaluation."
+  :group 'es
+  :type 'boolean)
+
+(defvar es-endpoint-url nil
+  "The current URL used as the Elasticsearch endpoint.")
+
+(defvar es-endpoint-url-history (list es-default-url)
+  "The history over used URLs.")
+
+(defcustom es-default-request-method "POST"
+  "The default request method used for queries."
+  :group 'es
+  :type '(choice
+          (const "POST")
+          (const "GET")
+          (const "PUT")
+          (const "PATCH")
+          (const "OPTIONS")
+          (const  "DELETE")
+          (string :tag "Custom")))
+
+(defcustom es-prompt-request-method nil
+  "Non-nil means prompt user for the request method on each query
+evaluation."
+  :group 'es
+  :type 'boolean)
+
+(defvar es-request-method nil
+  "The current request method used for this buffer.")
+
+(defvar es-request-method-history
+  '("POST"
+    "GET"
+    "PUT"
+    "PATCH"
+    "OPTIONS"
+    "DELETE"))
+
+(defcustom es-warn-on-delete-query t
+  "If `es-warn-on-delete-query' is set to true, es-mode prompts
+the user on DELETE requests."
+  :group 'es
+  :type 'boolean)
+
 (defvar es-results-buffer nil
   "Buffer local variable pointing to the buffer containing the
   results from the most recent query.")
+
+(defvar es-result-response nil
+  "The variable containing the response header from the result in
+  a result buffer.")
 
 (defvar es-top-level-fields
   '("aggregations" "aggs" "facets" "filter"
@@ -98,6 +154,48 @@
     "geohash_grid" "script")
   "Leaf-type facets")
 
+(defun es-set-endpoint-url (new-url)
+  "`new-url' is the url that you want the queries to be sent
+  to."
+  (interactive
+   (let ((current-url (or es-endpoint-url es-default-url)))
+     (list (read-string (format "ES URL (%s): " current-url)
+                        nil
+                        'es-endpoint-url-history
+                        current-url))))
+  (setq es-endpoint-url
+        (if (string= "" new-url)
+            (or es-endpoint-url es-default-url)
+          (add-to-list 'es-endpoint-url-history new-url)
+          new-url)))
+
+(defun es-get-url ()
+  "Returns the URL for the ES queries in this buffer unless it
+has not been set, in which case it prompts the user."
+  (or (and (not es-prompt-url) es-endpoint-url)
+      (command-execute 'es-set-endpoint-url)))
+
+(defun es-set-request-method (new-request-method)
+  "Set the request method to be used for the buffer."
+  (interactive
+   (let ((current-request-method (or es-request-method
+                                     es-default-request-method)))
+     (list (read-string (format "Method (%s): " current-request-method)
+                        nil
+                        'es-request-method-history
+                        current-request-method))))
+  (setq es-request-method
+        (if (string= "" new-request-method)
+            (or es-request-method es-default-request-method)
+          (add-to-list 'es-request-method-history new-request-method)
+          new-request-method)))
+
+(defun es-get-request-method ()
+  "Returns the current request-method unless it has not been set,
+in which case it prompts the user."
+  (or (and (not es-prompt-request-method) es-request-method)
+      (command-execute 'es-set-request-method)))
+
 (defun es-company-backend (command &optional arg &rest ign)
   "A `company-backend' for es-queries and facets."
   (case command
@@ -110,10 +208,6 @@
       arg
       (append es-top-level-fields es-query-types es-facet-types
               es-parent-types es-keywords)))))
-
-(defvar es-result-response nil
-  "The variable containing the response header from the result in
-  a result buffer.")
 
 (defun es-result--handle-response (status &optional es-results-buffer)
   "Handles the response from the server returns after sending a
@@ -136,44 +230,33 @@ query. "
   "Submits the active region as a query to the specified
 endpoint. If the region is not active, the whole buffer is used."
   (interactive)
-  (let ((beg (if (region-active-p) (region-beginning) (point-min)))
-        (end (if (region-active-p) (region-end) (point-max)))
-        (query-buffer (current-buffer))
-        (url-request-extra-headers
-         '(("Content-Type" . "application/x-www-form-urlencoded")))
-        url-request-method
-        url-request-data
-        url)
-    (with-temp-buffer
-      (insert-buffer-substring query-buffer beg end)
-      (whitespace-cleanup)
-      (goto-char (point-min))
-      (when (re-search-forward
-             (concat "^\\s-*"
-                     (regexp-opt
-                      (concatenate 'list
-                                   es-http-builtins
-                                   es-warnings)
-                      'word)
-                     "\\s-+\\(.*\\)"))
-        (setq url-request-method (match-string 1))
-        (setq url (match-string 2))
-        (forward-char 1)
-        (setq url-request-data
-              (buffer-substring-no-properties (point) (point-max)))))
-    (unless (buffer-live-p es-results-buffer)
-      (setq es-results-buffer
-            (generate-new-buffer
-             (format "*ES: %s*" (buffer-name)))))
-    (save-current-buffer
-      (set-buffer es-results-buffer)
-      (es-result-mode)
-      (setq buffer-read-only nil)
-      (delete-region (point-min) (point-max))
-      (setq buffer-read-only t))
-    (url-retrieve url 'es-result--handle-response (list es-results-buffer))
-    (view-buffer-other-window es-results-buffer)
-    (other-window -1)))
+  (let* ((beg (if (region-active-p) (region-beginning) (point-min)))
+         (end (if (region-active-p) (region-end) (point-max)))
+         (url-request-extra-headers
+          '(("Content-Type" . "application/x-www-form-urlencoded")))
+         (url (es-get-url))
+         (url-request-method (es-get-request-method))
+         (url-request-data (buffer-substring beg end)))
+    (when (or (not (string= "DELETE" url-request-method))
+              (not es-warn-on-delete-query)
+              (yes-or-no-p
+               ;; This will not font-lock if `yes-or-no-p' is aliased to
+               ;; `y-or-n-p'.
+               (propertize
+                "Do you really want to request a DELETE?"
+                'font-lock-face 'font-lock-warning-face)))
+      (unless (buffer-live-p es-results-buffer)
+        (setq es-results-buffer
+              (generate-new-buffer
+               (format "*ES: %s*" (buffer-name)))))
+      (with-current-buffer es-results-buffer
+        (es-result-mode)
+        (setq buffer-read-only nil)
+        (delete-region (point-min) (point-max))
+        (setq buffer-read-only t))
+      (url-retrieve url 'es-result--handle-response (list es-results-buffer))
+      (view-buffer-other-window es-results-buffer)
+      (other-window -1))))
 
 (defun es-result-show-response ()
   "Shows the header of the response from the server in the
@@ -272,9 +355,14 @@ endpoint. If the region is not active, the whole buffer is used."
 
   ;; Key maps
   (define-key es-mode-map (kbd "C-c C-c") 'es-query-region)
+  (define-key es-mode-map (kbd "C-c C-u") 'es-set-endpoint-url)
+  (define-key es-mode-map (kbd "C-c C-f") 'es-set-request-method)
 
   ;; Local buffer for results
   (make-local-variable 'es-results-buffer)
+
+  (make-local-variable 'es-endpoint-url)
+  (make-local-variable 'es-request-method)
 
   ;; If we have company-mode we use it.
   (when (boundp 'company-backends)
