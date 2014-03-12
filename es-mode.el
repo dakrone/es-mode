@@ -226,6 +226,16 @@ query. "
         (delete-region (point-min) (point))))
     (setq mode-name "ES[finished]")))
 
+(defun es--warn-on-delete-yes-or-no-p ()
+  (or (not (string= "DELETE" (upcase url-request-method)))
+      (not es-warn-on-delete-query)
+      (yes-or-no-p
+       ;; This will not font-lock if `yes-or-no-p' is aliased to
+       ;; `y-or-n-p'.
+       (propertize
+        "Do you really want to send a DELETE request?"
+        'font-lock-face 'font-lock-warning-face))))
+
 (defun es-query-region ()
   "Submits the active region as a query to the specified
 endpoint. If the region is not active, the whole buffer is used."
@@ -237,14 +247,7 @@ endpoint. If the region is not active, the whole buffer is used."
          (url (es-get-url))
          (url-request-method (es-get-request-method))
          (url-request-data (buffer-substring beg end)))
-    (when (or (not (string= "DELETE" url-request-method))
-              (not es-warn-on-delete-query)
-              (yes-or-no-p
-               ;; This will not font-lock if `yes-or-no-p' is aliased to
-               ;; `y-or-n-p'.
-               (propertize
-                "Do you really want to request a DELETE?"
-                'font-lock-face 'font-lock-warning-face)))
+    (when (es--warn-on-delete-yes-or-no-p)
       (unless (buffer-live-p es-results-buffer)
         (with-current-buffer (setq es-results-buffer
                                    (generate-new-buffer
