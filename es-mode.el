@@ -209,22 +209,23 @@ in which case it prompts the user."
       (append es-top-level-fields es-query-types es-facet-types
               es-parent-types es-keywords)))))
 
-(defun es-result--handle-response (status &optional es-results-buffer)
+(defun es-result--handle-response (status &optional results-buffer)
   "Handles the response from the server returns after sending a
 query. "
   (let ((http-results-buffer (current-buffer)))
-    (set-buffer es-results-buffer)
+    (set-buffer results-buffer)
     (let ((buffer-read-only nil))
       (insert-buffer-substring http-results-buffer)
       (kill-buffer http-results-buffer)
-      (whitespace-cleanup)
-      (goto-char (point-min))
-      (when (string-match "^.* 200 OK$" (thing-at-point 'line))
-        (search-forward "\n\n")
-        (setq es-result-response
-              (buffer-substring (point-min) (point)))
-        (delete-region (point-min) (point))))
-    (setq mode-name "ES[finished]")))
+      (if (zerop (buffer-size))
+          (insert "Error: could not open connection to server.")
+        (goto-char (point-min))
+        (when (string-match "^.* 200 OK$" (thing-at-point 'line))
+          (search-forward "\n\n")
+          (setq es-result-response
+                (buffer-substring (point-min) (point)))
+          (delete-region (point-min) (point)))
+        (setq mode-name "ES[finished]")))))
 
 (defun es--warn-on-delete-yes-or-no-p ()
   (or (not (string= "DELETE" (upcase url-request-method)))
@@ -249,14 +250,15 @@ endpoint. If the region is not active, the whole buffer is used."
          (url-request-data (buffer-substring beg end)))
     (when (es--warn-on-delete-yes-or-no-p)
       (unless (buffer-live-p es-results-buffer)
-        (with-current-buffer (setq es-results-buffer
-                                   (generate-new-buffer
-                                    (format "*ES: %s*" (buffer-name))))
+        (setq es-results-buffer
+              (generate-new-buffer
+               (format "*ES: %s*" (buffer-name))))
+        (with-current-buffer es-results-buffer
+          (setq buffer-read-only nil)
           (es-result-mode)))
       (with-current-buffer es-results-buffer
-        (setq buffer-read-only nil)
-        (delete-region (point-min) (point-max))
-        (setq buffer-read-only t))
+        (let ((buffer-read-only nil))
+          (delete-region (point-min) (point-max))))
       (url-retrieve url 'es-result--handle-response (list es-results-buffer))
       (view-buffer-other-window es-results-buffer)
       (other-window -1))))
