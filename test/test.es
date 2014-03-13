@@ -1,4 +1,3 @@
-POST http:localhost:9200/foo/_search
 {
   "query": {
     "filtered": {
