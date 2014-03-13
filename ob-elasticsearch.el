@@ -31,9 +31,6 @@
 
 ;;; Code:
 (require 'ob)
-(require 'ob-ref)
-(require 'ob-comint)
-(require 'ob-eval)
 (require 'es-mode)
 
 (defvar org-babel-default-header-args:elasticsearch
