@@ -46,8 +46,8 @@ org-babel.  This function is called by
 set to true, this function will also ask if the user really wants
 to do that."
   (message "Executing an Elasticsearch query block.")
-  (let ((endpoint-url (cdar (org-babel-get-header params :url)))
-        (url-request-method (cdar (org-babel-get-header params :method)))
+  (let ((endpoint-url (cdr (assoc url :params)))
+        (url-request-method (cdr (assoc :method params)))
         (url-request-data body)
         (url-request-extra-headers
          '(("Content-Type" . "application/x-www-form-urlencoded"))))
