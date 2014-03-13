@@ -267,6 +267,12 @@ endpoint. If the region is not active, the whole buffer is used."
   (interactive)
   (message es-result-response))
 
+(defvar es-result-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-r") 'es-result-show-response)
+    map)
+  "Keymap for `es-result-mode'")
+
 (define-derived-mode es-result-mode text-mode "ES[waiting]"
   "Major mode to hold the result from a query to elastic search end point.
 \\{es-result-mode-map}"
@@ -274,10 +280,7 @@ endpoint. If the region is not active, the whole buffer is used."
   (set-syntax-table es-mode-syntax-table)
   ;; Use es-mode font-lock
   (setq font-lock-defaults '(es-font-lock-keywords))
-  (make-local-variable 'es-result-response)
-
-  ;; Key maps
-  (define-key es-result-mode-map (kbd "C-c C-r") 'es-result-show-response))
+  (make-local-variable 'es-result-response))
 
 (defun es-indent-line ()
   "Indent current line as ES code. Uses the same indention as js-mode."
@@ -340,6 +343,14 @@ endpoint. If the region is not active, the whole buffer is used."
     st)
   "Syntax table for ES mode.")
 
+(defvar es-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-c") 'es-query-region)
+    (define-key map (kbd "C-c C-u") 'es-set-endpoint-url)
+    (define-key map (kbd "C-c C-f") 'es-set-request-method)
+    map)
+  "Keymap for `es-mode'.")
+
 ;; Compatibility with Emacs < 24
 (defalias 'es-parent-mode
   (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
@@ -355,11 +366,6 @@ endpoint. If the region is not active, the whole buffer is used."
   ;; Comment dwim
   (setq-local comment-start "// ")
   (setq-local comment-start-skip "//+[\t ]*")
-
-  ;; Key maps
-  (define-key es-mode-map (kbd "C-c C-c") 'es-query-region)
-  (define-key es-mode-map (kbd "C-c C-u") 'es-set-endpoint-url)
-  (define-key es-mode-map (kbd "C-c C-f") 'es-set-request-method)
 
   ;; Local buffer for results
   (make-local-variable 'es-results-buffer)
