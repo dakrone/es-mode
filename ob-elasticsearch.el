@@ -53,7 +53,7 @@ to do that."
          '(("Content-Type" . "application/x-www-form-urlencoded"))))
     (when (es--warn-on-delete-yes-or-no-p)
       (with-current-buffer (url-retrieve-synchronously endpoint-url)
-        (when (string-match "^.* 200 OK$" (thing-at-point 'line))
+        (when (string-match "^.* 20\d OK$" (thing-at-point 'line))
           (search-forward "\n\n")
           (delete-region (point-min) (point))
           (mark-whole-buffer)
