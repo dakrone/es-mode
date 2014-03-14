@@ -1,5 +1,5 @@
 * Testing ob-elasticsearch mode
-#+BEGIN_SRC elasticsearch :url http://localhost:9200/_search?pretty=true :method POST
+#+BEGIN_SRC es :url http://localhost:9200/_search?pretty=true :method POST
 {
   "query": {
     "match_all": {}

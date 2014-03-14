@@ -33,13 +33,13 @@
 (require 'ob)
 (require 'es-mode)
 
-(defvar org-babel-default-header-args:elasticsearch
+(defvar org-babel-default-header-args:es
   `((:url . ,es-default-url)
     (:method . ,es-default-request-method))
   "Default arguments for evaluating an elasticsearch query
 block.")
 
-(defun org-babel-execute:elasticsearch (body params)
+(defun org-babel-execute:es (body params)
   "Execute a block containing an Elasticsearch query with
 org-babel.  This function is called by
 `org-babel-execute-src-block'. If `es-warn-on-delete-query' is
