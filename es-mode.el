@@ -220,7 +220,7 @@ query. "
       (if (zerop (buffer-size))
           (insert "Error: could not open connection to server.")
         (goto-char (point-min))
-        (when (string-match "^.* 20\d OK$" (thing-at-point 'line))
+        (when (string-match "^.* 20[0-9] OK$" (thing-at-point 'line))
           (search-forward "\n\n")
           (setq es-result-response
                 (buffer-substring (point-min) (point)))
