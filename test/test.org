@@ -1,5 +1,5 @@
 * Testing ob-elasticsearch mode
-#+BEGIN_SRC es :url http://localhost:9200/_search?pretty=true :method POST
+#+BEGIN_SRC es :request POST :url http://localhost:9200/_search?pretty=true :tangle all.sh
 {
   "query": {
     "match_all": {}

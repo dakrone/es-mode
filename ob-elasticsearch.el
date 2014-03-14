@@ -35,9 +35,28 @@
 
 (defvar org-babel-default-header-args:es
   `((:url . ,es-default-url)
-    (:method . ,es-default-request-method))
+    (:request . ,es-default-request-method))
   "Default arguments for evaluating an elasticsearch query
 block.")
+
+(defvar org-babel-tangle-lang-exts)
+(add-to-list 'org-babel-tangle-lang-exts '("es" . "es"))
+
+(defun org-babel-expand-body:es (body params)
+  "This command is used by org-tangle to create a file with the
+source code of the elasticsearch block. If :tangle specifies a
+file with the .sh extension a curl-request is created instead of
+just a normal .es file that contains the body of the block.."
+  (let ((ext (file-name-extension
+              (cdr (assoc :tangle params)))))
+    (if (not (equal "sh" ext))
+        body
+      (let ((method (cdr (assoc :request params)))
+            (url (cdr (assoc :url params))))
+        (format "curl --request %s %s --data %S;\n"
+                method
+                url
+                body)))))
 
 (defun org-babel-execute:es (body params)
   "Execute a block containing an Elasticsearch query with
@@ -47,7 +66,7 @@ set to true, this function will also ask if the user really wants
 to do that."
   (message "Executing an Elasticsearch query block.")
   (let ((endpoint-url (cdr (assoc :url params)))
-        (url-request-method (cdr (assoc :method params)))
+        (url-request-method (cdr (assoc :request params)))
         (url-request-data body)
         (url-request-extra-headers
          '(("Content-Type" . "application/x-www-form-urlencoded"))))

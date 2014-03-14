@@ -65,7 +65,7 @@ And then you will be able to hit `C-c C-c` on code like this in your org-mode
 file:
 
 ```
-#+BEGIN_SRC elasticsearch :url http://localhost:9200/_search?pretty=true :method POST
+#+BEGIN_SRC elasticsearch :request POST url http://localhost:9200/_search?pretty=true
 {
   "query": {
     "match_all": {}
@@ -74,7 +74,7 @@ file:
 #+END_SRC
 ```
 
-org-mode uses the arguments `:url` and `:method` to know where and how
+org-mode uses the arguments `:url` and `:request` to know where and how
 to send a query. If they are not present org-mode will use
 `es-default-url` and `es-defaul-request-method` instead.
 
