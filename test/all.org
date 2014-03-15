@@ -6,3 +6,11 @@
   }
 }
 #+END_SRC
+
+#+BEGIN_SRC es :request POST :url http://localhost:9200/_search?pretty=true :tangle yes
+{
+  "query": {
+    "match_all": {}
+  }
+}
+#+END_SRC
