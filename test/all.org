@@ -1,0 +1,16 @@
+* Testing ob-elasticsearch mode
+#+BEGIN_SRC es :method POST :url http://localhost:9200/_search?pretty=true :tangle all.sh
+{
+  "query": {
+    "match_all": {}
+  }
+}
+#+END_SRC
+
+#+BEGIN_SRC es :method POST :url http://localhost:9200/_search?pretty=true :tangle yes
+{
+  "query": {
+    "match_all": {}
+  }
+}
+#+END_SRC

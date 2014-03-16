@@ -1,6 +1,6 @@
 ## Elasticsearch mode for Emacs
 
-Provides a major mode for editing ES curl examples. Better highlighting and
+Provides a major mode for editing ES query examples. Better highlighting and
 indention than sh-mode or js-mode.
 
 It is intended to be a mixture of the three modes as well as mimicing some of
@@ -27,19 +27,22 @@ repository, and `M-x package-install RET es-mode RET` to install `es-mode`.
 ### Usage
 
 ```elisp
-(require 'es-mode)
-(es-mode)
+(add-to-list 'load-path "/path/to/es-mode-dir")
+(autoload 'es-mode "es-mode.el"
+  "Major mode for editing Elasticsearch queries" t)
+(add-to-list 'auto-mode-alist '("\\.es$" . es-mode))
 ```
 
-Or open a file with a `.es` extension.
+You can now open a file with an `.es` extension and `es-mode` will
+automatically load..
 
 ### Features
 
 - Highlighting for builtin queries, facets, aggregations, special paramaters
-- Highlighting for curl's HTTP (`-XPOST`) flags
 - A [company-mode](http://company-mode.github.io/) backend for completing ES
   queries
 - Better indenting than sh-mode (indents like js-mode)
+- Sending the queries as a http-request to Elasticsearch endpoints.
 
 ### Example
 
@@ -52,27 +55,28 @@ See `test.es`, here's a screenshot from my theme:
 One of the main reasons I started this was better highlighting and indention for
 org-babel. So add the snippet below to your .emacs:
 
-Put into your `~/.emacs.d/init.el`:
-
-```elisp
-(defun org-babel-execute:es (body params)
-  "Execute a block of ES code with org-babel."
-  (message "executing ES source code block")
-  (org-babel-eval "/bin/sh" body))
+```
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((elasticsearch . t)))
 ```
 
 And then you will be able to hit `C-c C-c` on code like this in your org-mode
 file:
 
 ```
-#+BEGIN_SRC es
-curl -XPOST 'localhost:9200/_search' -d'{
+#+BEGIN_SRC elasticsearch :request POST url http://localhost:9200/_search?pretty=true
+{
   "query": {
     "match_all": {}
   }
-}'
+}
 #+END_SRC
 ```
+
+org-mode uses the arguments `:url` and `:request` to know where and how
+to send a query. If they are not present org-mode will use
+`es-default-url` and `es-defaul-request-method` instead.
 
 ### Feedback
 
