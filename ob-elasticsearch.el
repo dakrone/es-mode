@@ -35,7 +35,7 @@
 
 (defvar org-babel-default-header-args:es
   `((:url . ,es-default-url)
-    (:request . ,es-default-request-method))
+    (:method . ,es-default-request-method))
   "Default arguments for evaluating an elasticsearch query
 block.")
 
@@ -51,7 +51,7 @@ just a normal .es file that contains the body of the block.."
               (cdr (assoc :tangle params)))))
     (if (not (equal "sh" ext))
         body
-      (let ((method (cdr (assoc :request params)))
+      (let ((method (cdr (assoc :method params)))
             (url (cdr (assoc :url params))))
         (format "curl --request %s %s --data %S;\n"
                 method
@@ -66,7 +66,7 @@ set to true, this function will also ask if the user really wants
 to do that."
   (message "Executing an Elasticsearch query block.")
   (let ((endpoint-url (cdr (assoc :url params)))
-        (url-request-method (cdr (assoc :request params)))
+        (url-request-method (cdr (assoc :method params)))
         (url-request-data body)
         (url-request-extra-headers
          '(("Content-Type" . "application/x-www-form-urlencoded"))))
