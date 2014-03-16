@@ -53,8 +53,8 @@ just a normal .es file that contains the body of the block.."
         body
       (let ((method (cdr (assoc :method params)))
             (url (cdr (assoc :url params))))
-        (format "curl --request %s %s --data %S;\n"
-                method
+        (format "curl -X%s %s -d %S\n"
+                (upcase method)
                 url
                 body)))))
 
