@@ -71,7 +71,8 @@ to do that."
         (url-request-extra-headers
          '(("Content-Type" . "application/x-www-form-urlencoded"))))
     (when (es--warn-on-delete-yes-or-no-p)
-      (with-current-buffer (url-retrieve-synchronously endpoint-url)
+      (with-current-buffer (url-retrieve-synchronously
+                            (es-add-http endpoint-url))
         (when (string-match "^.* 20[0-9] OK$" (thing-at-point 'line))
           (search-forward "\n\n")
           (delete-region (point-min) (point))

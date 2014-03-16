@@ -169,11 +169,18 @@ the user on DELETE requests."
           (add-to-list 'es-endpoint-url-history new-url)
           new-url)))
 
+(defun es-add-http (url)
+  "Add a leading `http://' if no scheme is specified in the URL."
+  (if (not (string-match "^http" url))
+        (concat "http://" url)
+      url))
+
 (defun es-get-url ()
   "Returns the URL for the ES queries in this buffer unless it
 has not been set, in which case it prompts the user."
-  (or (and (not es-prompt-url) es-endpoint-url)
-      (command-execute 'es-set-endpoint-url)))
+  (let ((url (or (and (not es-prompt-url) es-endpoint-url)
+                 (command-execute 'es-set-endpoint-url))))
+    (es-add-http url)))
 
 (defun es-set-request-method (new-request-method)
   "Set the request method to be used for the buffer."
