@@ -305,9 +305,7 @@ surrounded by {}, stops searching when a blank newline is found
 later than the current point."
   (interactive)
   (save-excursion
-    ;; (search-backward-regexp (concat "^" (regexp-opt es-http-builtins)))
     (search-backward-regexp "^{")
-    ;; (forward-line)
     (let* ((start (point)))
       (search-forward-regexp "^$")
       (buffer-substring-no-properties start (point)))))
