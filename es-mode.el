@@ -60,6 +60,11 @@
   :group 'es
   :type 'string)
 
+(defcustom es-default-base "http://localhost:9200"
+  "TODO - document"
+  :group 'es
+  :type 'string)
+
 (defcustom es-prompt-url nil
   "Non-nil means prompt user for requested URL on each query
   evaluation."
@@ -154,6 +159,22 @@ the user on DELETE requests."
     "geohash_grid" "script")
   "Leaf-type facets")
 
+(defun es-find-params ()
+  "TODO - document"
+  (interactive)
+  (save-excursion
+    (search-backward-regexp (concat "^" (regexp-opt es-http-builtins)))
+    (let ((line (buffer-substring-no-properties
+                 (line-beginning-position)
+                 (line-end-position))))
+      (string-match (concat "^\\("
+                            (regexp-opt es-http-builtins)
+                            "\\) \\(.*\\)$")
+                    line)
+      (let ((method (match-string 1 line))
+            (uri (match-string 2 line)))
+        (list method (es-add-http (concat es-default-base uri)))))))
+
 (defun es-set-endpoint-url (new-url)
   "`new-url' is the url that you want the queries to be sent
   to."
@@ -172,8 +193,8 @@ the user on DELETE requests."
 (defun es-add-http (url)
   "Add a leading `http://' if no scheme is specified in the URL."
   (if (not (string-match "^http" url))
-        (concat "http://" url)
-      url))
+      (concat "http://" url)
+    url))
 
 (defun es-get-url ()
   "Returns the URL for the ES queries in this buffer unless it
@@ -244,18 +265,9 @@ query. "
         "Do you really want to send a DELETE request?"
         'font-lock-face 'font-lock-warning-face))))
 
-(defun es-query-region ()
-  "Submits the active region as a query to the specified
-endpoint. If the region is not active, the whole buffer is used."
-  (interactive)
-  (let* ((beg (if (region-active-p) (region-beginning) (point-min)))
-         (end (if (region-active-p) (region-end) (point-max)))
-         (url-request-extra-headers
-          '(("Content-Type" . "application/x-www-form-urlencoded")))
-         (url (es-get-url))
-         (url-request-method (es-get-request-method))
-         (url-request-data (buffer-substring beg end)))
-    (when (es--warn-on-delete-yes-or-no-p)
+(defun es-perform-into-other-window ()
+  "TODO - document"
+  (when (es--warn-on-delete-yes-or-no-p)
       (unless (buffer-live-p es-results-buffer)
         (setq es-results-buffer
               (generate-new-buffer
@@ -268,7 +280,44 @@ endpoint. If the region is not active, the whole buffer is used."
           (delete-region (point-min) (point-max))))
       (url-retrieve url 'es-result--handle-response (list es-results-buffer))
       (view-buffer-other-window es-results-buffer)
-      (other-window -1))))
+      (other-window -1)))
+
+(defun es-query-region ()
+  "Submits the active region as a query to the specified
+endpoint. If the region is not active, the whole buffer is used."
+  (interactive)
+  (let* ((beg (if (region-active-p) (region-beginning) (point-min)))
+         (end (if (region-active-p) (region-end) (point-max)))
+         (url-request-extra-headers
+          '(("Content-Type" . "application/x-www-form-urlencoded")))
+         (url (es-get-url))
+         (url-request-method (es-get-request-method))
+         (url-request-data (buffer-substring beg end)))
+    (es-perform-into-other-window)))
+
+(defun es-get-request-body ()
+  "TODO - document."
+  (interactive)
+  (save-excursion
+    (search-backward-regexp (concat "^" (regexp-opt es-http-builtins)))
+    (forward-line)
+    (let* ((start (point)))
+      (search-forward-regexp "^$")
+      (buffer-substring-no-properties start (point)))))
+
+(defun es-request-subsection-or-region ()
+  "TODO - document."
+  (interactive)
+  (if (region-active-p)
+      (es-query-region)
+    (let* ((params (es-find-params))
+           (url-request-method (car params))
+           (url (car (cdr params)))
+           (url-request-extra-headers
+            '(("Content-Type" . "application/x-www-form-urlencoded")))
+           (url-request-data (es-get-request-body)))
+      (message "Issuing %s against %s" url-request-method url)
+      (es-perform-into-other-window))))
 
 (defun es-result-show-response ()
   "Shows the header of the response from the server in the
@@ -354,7 +403,8 @@ endpoint. If the region is not active, the whole buffer is used."
 
 (defvar es-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-c") 'es-query-region)
+    (define-key map (kbd "C-c C-c") 'es-request-subsection-or-region)
+    (define-key map (kbd "C-c C-a") 'es-query-)
     (define-key map (kbd "C-c C-u") 'es-set-endpoint-url)
     (define-key map (kbd "C-c C-f") 'es-set-request-method)
     map)
