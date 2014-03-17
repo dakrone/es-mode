@@ -272,20 +272,20 @@ query. "
 window. Assumes `url-request-method' and `url-request-data' are
 already set."
   (when (es--warn-on-delete-yes-or-no-p)
-      (unless (buffer-live-p es-results-buffer)
-        (setq es-results-buffer
-              (generate-new-buffer
-               (format "*ES: %s*" (buffer-name))))
-        (with-current-buffer es-results-buffer
-          (setq buffer-read-only nil)
-          (es-result-mode)))
+    (unless (buffer-live-p es-results-buffer)
+      (setq es-results-buffer
+            (generate-new-buffer
+             (format "*ES: %s*" (buffer-name))))
       (with-current-buffer es-results-buffer
-        (let ((buffer-read-only nil))
-          (delete-region (point-min) (point-max))))
-      (url-retrieve url 'es-result--handle-response (list es-results-buffer))
-      (view-buffer-other-window es-results-buffer)
-      (other-window -1)))
-
+        (setq buffer-read-only nil)
+        (es-result-mode)))
+    (with-current-buffer es-results-buffer
+      (let ((buffer-read-only nil))
+        (delete-region (point-min) (point-max))))
+    (url-retrieve url 'es-result--handle-response (list es-results-buffer))
+    (view-buffer-other-window es-results-buffer)
+    (other-window -1)))
+2
 (defun es-query-region ()
   "Submits the active region as a query to the specified
 endpoint. If the region is not active, the whole buffer is used."
@@ -379,6 +379,11 @@ against."
       (,(concat "^\\s-*\\("
                 (regexp-opt es-http-builtins)
                 "\\)\\s-+\\(http://[^[:space:]\n]+\\)")
+       (1 font-lock-builtin-face t)
+       (2 font-lock-variable-name-face t))
+      (,(concat "^\\("
+                (regexp-opt es-http-builtins)
+                "\\) \\(/[^[:space:]\n]+\\)")
        (1 font-lock-builtin-face t)
        (2 font-lock-variable-name-face t))
       ;; keywords for fields usually specified
