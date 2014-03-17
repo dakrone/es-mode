@@ -1,3 +1,10 @@
+// Thing without a leading Sense-like header
+{
+  "query": {
+    "match_all": {}
+  }
+}
+
 POST /_search?pretty
 {
   "query": {
