@@ -162,20 +162,24 @@ the user on DELETE requests."
 (defun es-find-params ()
   "Search backwards to find text like \"POST /_search\",
   returning a list of method and full URL, prepending
-  `es-default-base' to the URL."
+  `es-default-base' to the URL. Returns `false' if no parameters
+  are found."
   (interactive)
   (save-excursion
-    (search-backward-regexp (concat "^" (regexp-opt es-http-builtins)))
-    (let ((line (buffer-substring-no-properties
-                 (line-beginning-position)
-                 (line-end-position))))
-      (string-match (concat "^\\("
-                            (regexp-opt es-http-builtins)
-                            "\\) \\(.*\\)$")
-                    line)
-      (let ((method (match-string 1 line))
-            (uri (match-string 2 line)))
-        (list method (es-add-http (concat es-default-base uri)))))))
+    (if (search-backward-regexp (concat "^" (regexp-opt es-http-builtins))
+                                nil t)
+        (let ((line (buffer-substring-no-properties
+                     (line-beginning-position)
+                     (line-end-position))))
+          (string-match (concat "^\\("
+                                (regexp-opt es-http-builtins)
+                                "\\) \\(.*\\)$")
+                        line)
+          (let ((method (match-string 1 line))
+                (uri (match-string 2 line)))
+            (list method (es-add-http (concat es-default-base uri)))))
+      (message "Could not find <method> <url> parameters!")
+      nil)))
 
 (defun es-set-endpoint-url (new-url)
   "`new-url' is the url that you want the queries to be sent
@@ -318,14 +322,15 @@ against."
   (interactive)
   (if (region-active-p)
       (es-query-region)
-    (let* ((params (es-find-params))
-           (url-request-method (car params))
-           (url (car (cdr params)))
-           (url-request-extra-headers
-            '(("Content-Type" . "application/x-www-form-urlencoded")))
-           (url-request-data (es-get-request-body)))
-      (message "Issuing %s against %s" url-request-method url)
-      (es-perform-into-other-window url))))
+    (let* ((params (es-find-params)))
+      (when params
+        (let* ((url-request-method (car params))
+               (url (car (cdr params)))
+               (url-request-extra-headers
+                '(("Content-Type" . "application/x-www-form-urlencoded")))
+               (url-request-data (es-get-request-body)))
+          (message "Issuing %s against %s" url-request-method url)
+          (es-perform-into-other-window url))))))
 
 (defun es-result-show-response ()
   "Shows the header of the response from the server in the
