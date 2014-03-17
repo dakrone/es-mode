@@ -265,8 +265,10 @@ query. "
         "Do you really want to send a DELETE request?"
         'font-lock-face 'font-lock-warning-face))))
 
-(defun es-perform-into-other-window ()
-  "TODO - document"
+(defun es-perform-into-other-window (url)
+  "Perform a HTTP request, displaying the results in another
+window. Assumes `url-request-method' and `url-request-data' are
+already set."
   (when (es--warn-on-delete-yes-or-no-p)
       (unless (buffer-live-p es-results-buffer)
         (setq es-results-buffer
@@ -293,7 +295,7 @@ endpoint. If the region is not active, the whole buffer is used."
          (url (es-get-url))
          (url-request-method (es-get-request-method))
          (url-request-data (buffer-substring beg end)))
-    (es-perform-into-other-window)))
+    (es-perform-into-other-window url)))
 
 (defun es-get-request-body ()
   "TODO - document."
@@ -317,7 +319,7 @@ endpoint. If the region is not active, the whole buffer is used."
             '(("Content-Type" . "application/x-www-form-urlencoded")))
            (url-request-data (es-get-request-body)))
       (message "Issuing %s against %s" url-request-method url)
-      (es-perform-into-other-window))))
+      (es-perform-into-other-window url))))
 
 (defun es-result-show-response ()
   "Shows the header of the response from the server in the
