@@ -285,7 +285,7 @@ already set."
     (url-retrieve url 'es-result--handle-response (list es-results-buffer))
     (view-buffer-other-window es-results-buffer)
     (other-window -1)))
-2
+
 (defun es-query-region ()
   "Submits the active region as a query to the specified
 endpoint. If the region is not active, the whole buffer is used."
@@ -305,8 +305,9 @@ surrounded by {}, stops searching when a blank newline is found
 later than the current point."
   (interactive)
   (save-excursion
-    (search-backward-regexp (concat "^" (regexp-opt es-http-builtins)))
-    (forward-line)
+    ;; (search-backward-regexp (concat "^" (regexp-opt es-http-builtins)))
+    (search-backward-regexp "^{")
+    ;; (forward-line)
     (let* ((start (point)))
       (search-forward-regexp "^$")
       (buffer-substring-no-properties start (point)))))
