@@ -61,7 +61,7 @@
   :type 'string)
 
 (defcustom es-default-base "http://localhost:9200"
-  "TODO - document"
+  "Default URL base to be added to Sense-like requests"
   :group 'es
   :type 'string)
 
@@ -160,7 +160,9 @@ the user on DELETE requests."
   "Leaf-type facets")
 
 (defun es-find-params ()
-  "TODO - document"
+  "Search backwards to find text like \"POST /_search\",
+  returning a list of method and full URL, prepending
+  `es-default-base' to the URL."
   (interactive)
   (save-excursion
     (search-backward-regexp (concat "^" (regexp-opt es-http-builtins)))
@@ -298,7 +300,9 @@ endpoint. If the region is not active, the whole buffer is used."
     (es-perform-into-other-window url)))
 
 (defun es-get-request-body ()
-  "TODO - document."
+  "Return the body of a request when executed inside of text
+surrounded by {}, stops searching when a blank newline is found
+later than the current point."
   (interactive)
   (save-excursion
     (search-backward-regexp (concat "^" (regexp-opt es-http-builtins)))
@@ -308,7 +312,10 @@ endpoint. If the region is not active, the whole buffer is used."
       (buffer-substring-no-properties start (point)))))
 
 (defun es-request-subsection-or-region ()
-  "TODO - document."
+  "If a region is active, perform a request for it, possibly
+prompting for a URL and method. Otherwise, search backwards for a
+Sense-like method followed by a URI to perform the request
+against."
   (interactive)
   (if (region-active-p)
       (es-query-region)
