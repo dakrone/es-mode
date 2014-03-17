@@ -404,7 +404,7 @@ endpoint. If the region is not active, the whole buffer is used."
 (defvar es-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-c") 'es-request-subsection-or-region)
-    (define-key map (kbd "C-c C-a") 'es-query-)
+    (define-key map (kbd "C-c C-a") 'es-query-region)
     (define-key map (kbd "C-c C-u") 'es-set-endpoint-url)
     (define-key map (kbd "C-c C-f") 'es-set-request-method)
     map)
