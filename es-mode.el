@@ -166,18 +166,14 @@ the user on DELETE requests."
   are found."
   (interactive)
   (save-excursion
-    (if (search-backward-regexp (concat "^" (regexp-opt es-http-builtins))
-                                nil t)
-        (let ((line (buffer-substring-no-properties
-                     (line-beginning-position)
-                     (line-end-position))))
-          (string-match (concat "^\\("
-                                (regexp-opt es-http-builtins)
-                                "\\) \\(.*\\)$")
-                        line)
-          (let ((method (match-string 1 line))
-                (uri (match-string 2 line)))
-            (list method (es-add-http (concat es-default-base uri)))))
+    (if (search-backward-regexp
+         (concat "^\\("
+                 (regexp-opt es-http-builtins)
+                 "\\) \\(.*\\)$")
+          nil t)
+        (let ((method (match-string 1))
+              (uri (match-string 2)))
+          (list method (es-add-http (concat es-default-base uri))))
       (message "Could not find <method> <url> parameters!")
       nil)))
 
