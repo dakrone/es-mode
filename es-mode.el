@@ -307,7 +307,7 @@ later than the current point."
   (save-excursion
     (search-backward-regexp "^{")
     (let* ((start (point)))
-      (search-forward-regexp "^$")
+      (forward-sexp)
       (buffer-substring-no-properties start (point)))))
 
 (defun es-request-subsection-or-region ()
