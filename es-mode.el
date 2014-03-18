@@ -60,7 +60,7 @@
   :group 'es
   :type 'string)
 
-(defcustom es-default-base "http://localhost:9200"
+(defcustom es-default-base "http://localhost:9200/"
   "Default URL base to be added to Sense-like requests"
   :group 'es
   :type 'string)
