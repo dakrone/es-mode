@@ -56,3 +56,6 @@ POST /_search?pretty
   },
   "size": 1
 }
+
+DELETE /index
+{}

@@ -137,6 +137,10 @@ the user on DELETE requests."
   '("GET" "OPTIONS" "PATCH" "POST" "PUT")
   "HTTP methods used by curl")
 
+(defvar es-http-builtins-all
+  (cons "DELETE" es-http-builtins)
+  "HTTP methods, including `DELETE'")
+
 (defvar es-parent-types
   '("and" "bool" "filtered" "not" "or" "properties" "mappings" "settings")
   "Compound queries that always contain additional queries or filters")
@@ -168,7 +172,7 @@ the user on DELETE requests."
   (save-excursion
     (if (search-backward-regexp
          (concat "^\\("
-                 (regexp-opt es-http-builtins)
+                 (regexp-opt es-http-builtins-all)
                  "\\) \\(.*\\)$")
          nil t)
         (let ((method (match-string 1))
@@ -320,7 +324,7 @@ later than the current point."
              (url-request-method (car params)))
         (search-backward-regexp
          (concat "^\\("
-                 (regexp-opt es-http-builtins)
+                 (regexp-opt es-http-builtins-all)
                  "\\) \\(.*\\)$")
          nil t)
         (forward-line)
@@ -333,7 +337,7 @@ later than the current point."
   (save-excursion
     (let ((line (buffer-substring-no-properties (line-beginning-position)
                                                 (line-end-position))))
-      (if (string-match-p (concat "^" (regexp-opt es-http-builtins) " .*$")
+      (if (string-match-p (concat "^" (regexp-opt es-http-builtins-all) " .*$")
                           line)
           t
         nil))))
@@ -371,7 +375,7 @@ available. Returns true if one was found, nil otherwise."
     (forward-line -1))
   (if (search-backward-regexp
        (concat "^\\("
-               (regexp-opt es-http-builtins)
+               (regexp-opt es-http-builtins-all)
                "\\) \\(.*\\)$")
        nil t)
       (progn
@@ -389,7 +393,7 @@ available. Returns true if one was found, nil otherwise."
     (forward-line))
   (if (search-forward-regexp
        (concat "^\\("
-               (regexp-opt es-http-builtins)
+               (regexp-opt es-http-builtins-all)
                "\\) \\(.*\\)$")
        nil t)
       (progn
@@ -460,7 +464,7 @@ available. Returns true if one was found, nil otherwise."
        (1 font-lock-builtin-face t)
        (2 font-lock-variable-name-face t))
       (,(concat "^\\("
-                (regexp-opt es-http-builtins)
+                (regexp-opt es-http-builtins-all)
                 "\\) \\(/[^[:space:]\n]*\\)")
        (1 font-lock-builtin-face t)
        (2 font-lock-variable-name-face t))
