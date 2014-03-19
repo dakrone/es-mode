@@ -461,7 +461,7 @@ available. Returns true if one was found, nil otherwise."
        (2 font-lock-variable-name-face t))
       (,(concat "^\\("
                 (regexp-opt es-http-builtins)
-                "\\) \\(/[^[:space:]\n]+\\)")
+                "\\) \\(/[^[:space:]\n]*\\)")
        (1 font-lock-builtin-face t)
        (2 font-lock-variable-name-face t))
       ;; keywords for fields usually specified
