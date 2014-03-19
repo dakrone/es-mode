@@ -246,6 +246,7 @@ query. "
     (set-buffer results-buffer)
     (let ((buffer-read-only nil))
       (insert-buffer-substring http-results-buffer)
+      (insert "\n")
       (kill-buffer http-results-buffer)
       (if (zerop (buffer-size))
           (insert "Error: could not open connection to server.")
@@ -374,6 +375,7 @@ available. Returns true if one was found, nil otherwise."
                "\\) \\(.*\\)$")
        nil t)
       (progn
+        (message "Jumping to previous ES request")
         (beginning-of-line)
         t)
     nil))
@@ -391,6 +393,7 @@ available. Returns true if one was found, nil otherwise."
                "\\) \\(.*\\)$")
        nil t)
       (progn
+        (message "Jumping to next ES request")
         (beginning-of-line)
         t)
     nil))
@@ -398,7 +401,7 @@ available. Returns true if one was found, nil otherwise."
 (defun es-run-all-requests ()
   "Runs all requests, updating the buffer when they complete."
   (interactive)
-  (point-min)
+  (beginning-of-buffer)
   (es-execute-request-if-found)
   (while (es-goto-next-request)
     (es-execute-request-if-found)))
