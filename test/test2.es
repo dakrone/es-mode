@@ -5,6 +5,9 @@
   }
 }
 
+GET /_cluster/health?pretty
+{}
+
 POST /_search?pretty
 {
   "query": {
