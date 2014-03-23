@@ -331,15 +331,11 @@ the end."
           (forward-sexp)
           (buffer-substring-no-properties start (point)))))))
 
-(defun es-at-current-header-p ()
+(defun es--at-current-header-p ()
   "Returns t if at on a header line, nil otherwise."
-  (save-excursion
-    (let ((line (buffer-substring-no-properties (line-beginning-position)
-                                                (line-end-position))))
-      (if (string-match-p (concat "^" (regexp-opt es-http-builtins-all) " .*$")
-                          line)
-          t
-        nil))))
+  (string-match-p (concat "^" (regexp-opt es-http-builtins-all) " .*$")
+                  (buffer-substring-no-properties (line-beginning-position)
+                                                  (line-end-position))))
 
 (defun es-execute-request-if-found ()
   "Executes a request with parameters if found, otherwises
@@ -350,7 +346,7 @@ not move the point."
   ;; If we're currently on a parameter declaration, go forward a line and a
   ;; character to place us into the sexp {}
   (save-excursion
-    (when (or (eq 1 (point)) (es-at-current-header-p))
+    (when (or (eq 1 (point)) (es--at-current-header-p))
       (beginning-of-line)
       (forward-line)
       (forward-char))
@@ -374,7 +370,7 @@ not move the point."
 available. Returns true if one was found, nil otherwise."
   (interactive)
   ;; Go backwards a line if we're already at a header
-  (when (es-at-current-header-p)
+  (when (es--at-current-header-p)
     (forward-line -1))
   (if (search-backward-regexp
        (concat "^\\("
@@ -392,7 +388,7 @@ available. Returns true if one was found, nil otherwise."
 available. Returns true if one was found, nil otherwise."
   (interactive)
   ;; Go forward a line if we're already at a header
-  (when (es-at-current-header-p)
+  (when (es--at-current-header-p)
     (forward-line))
   (if (search-forward-regexp
        (concat "^\\("
