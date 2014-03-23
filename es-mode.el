@@ -163,6 +163,11 @@ the user on DELETE requests."
     "geohash_grid" "script")
   "Leaf-type facets")
 
+(defconst es--method-url-regexp
+  (concat "^\\("
+          (regexp-opt es-http-builtins-all)
+          "\\) \\(.*\\)$"))
+
 (defun es-find-params ()
   "Search backwards to find text like \"POST /_search\",
   returning a list of method and full URL, prepending
@@ -170,11 +175,7 @@ the user on DELETE requests."
   are found."
   (interactive)
   (save-excursion
-    (if (search-backward-regexp
-         (concat "^\\("
-                 (regexp-opt es-http-builtins-all)
-                 "\\) \\(.*\\)$")
-         nil t)
+    (if (search-backward-regexp es--method-url-regexp nil t)
         (let ((method (match-string 1))
               (uri (match-string 2)))
           (list method (es-add-http (concat es-default-base uri))))
@@ -321,11 +322,7 @@ the end."
     (when params
       (let* ((url (car (cdr params)))
              (url-request-method (car params)))
-        (search-backward-regexp
-         (concat "^\\("
-                 (regexp-opt es-http-builtins-all)
-                 "\\) \\(.*\\)$")
-         nil t)
+        (search-backward-regexp es--method-url-regexp nil t)
         (forward-line)
         (let ((start (point)))
           (forward-sexp)
@@ -372,11 +369,7 @@ available. Returns true if one was found, nil otherwise."
   ;; Go backwards a line if we're already at a header
   (when (es--at-current-header-p)
     (forward-line -1))
-  (if (search-backward-regexp
-       (concat "^\\("
-               (regexp-opt es-http-builtins-all)
-               "\\) \\(.*\\)$")
-       nil t)
+  (if (search-backward-regexp es--method-url-regexp nil t)
       (progn
         (message "Jumping to previous ES request")
         (beginning-of-line)
@@ -390,11 +383,7 @@ available. Returns true if one was found, nil otherwise."
   ;; Go forward a line if we're already at a header
   (when (es--at-current-header-p)
     (forward-line))
-  (if (search-forward-regexp
-       (concat "^\\("
-               (regexp-opt es-http-builtins-all)
-               "\\) \\(.*\\)$")
-       nil t)
+  (if (search-forward-regexp es--method-url-regexp nil t)
       (progn
         (message "Jumping to next ES request")
         (beginning-of-line)
