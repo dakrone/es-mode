@@ -366,9 +366,7 @@ not move the point."
   "Advance the point to the previous parameter declaration, if
 available. Returns true if one was found, nil otherwise."
   (interactive)
-  ;; Go backwards a line if we're already at a header
-  (when (es--at-current-header-p)
-    (forward-line -1))
+  (move-beginning-of-line)
   (if (search-backward-regexp es--method-url-regexp nil t)
       (progn
         (message "Jumping to previous ES request")
