@@ -378,9 +378,7 @@ available. Returns true if one was found, nil otherwise."
   "Advance the point to the next parameter declaration, if
 available. Returns true if one was found, nil otherwise."
   (interactive)
-  ;; Go forward a line if we're already at a header
-  (when (es--at-current-header-p)
-    (forward-line))
+  (move-end-of-line)
   (if (search-forward-regexp es--method-url-regexp nil t)
       (progn
         (message "Jumping to next ES request")
