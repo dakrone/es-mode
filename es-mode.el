@@ -304,16 +304,15 @@ endpoint. If the region is not active, the whole buffer is used."
          (url-request-data (buffer-substring beg end)))
     (es-perform-into-other-window url)))
 
-(defun es-get-request-body ()
-  "Return the body of a request when executed inside of text
-surrounded by {}, stops searching when a blank newline is found
-later than the current point."
+(defun es-mark-request-body ()
+  "Sets point to the beginning of the request body and mark at
+the end."
   (interactive)
-  (save-excursion
-    (search-backward-regexp "^{")
-    (let* ((start (point)))
-      (forward-sexp)
-      (buffer-substring-no-properties start (point)))))
+  (condition-case
+      (while t
+        (backward-up-list))
+      (error nil))
+  (mark-sexp))
 
 (defun es-run-request ()
   "Runs a request from somewhere inside of the request body."
@@ -361,7 +360,11 @@ not move the point."
                  (url (car (cdr params)))
                  (url-request-extra-headers
                   '(("Content-Type" . "application/x-www-form-urlencoded")))
-                 (url-request-data (es-get-request-body)))
+                 (url-request-data
+                  (save-excursion
+                    (es-mark-request-body)
+                    (buffer-substring (region-beginning)
+                                      (region-end)))))
             (message "Issuing %s against %s" url-request-method url)
             (es-perform-into-other-window url))
         (es-execute-region)))))
