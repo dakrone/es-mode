@@ -178,7 +178,7 @@ the user on DELETE requests."
     (if (search-backward-regexp es--method-url-regexp nil t)
         (let ((method (match-string 1))
               (uri (match-string 2)))
-          (list method (es-add-http (concat es-default-base uri))))
+          `(,method . ,(es-add-http (concat es-default-base uri))))
       (message "Could not find <method> <url> parameters!")
       nil)))
 
@@ -288,79 +288,44 @@ already set."
     (with-current-buffer es-results-buffer
       (let ((buffer-read-only nil))
         (delete-region (point-min) (point-max))))
+    (message "Issuing %s against %s" url-request-method url)
     (url-retrieve url 'es-result--handle-response (list es-results-buffer))
     (view-buffer-other-window es-results-buffer)
     (other-window -1)))
 
-(defun es-execute-region ()
+(defun es--execute-region ()
   "Submits the active region as a query to the specified
-endpoint. If the region is not active, the whole buffer is used."
-  (interactive)
+endpoint. If the region is not active, the whole buffer is
+used. Uses the params if it can find them or alternativly the
+vars."
   (let* ((beg (if (region-active-p) (region-beginning) (point-min)))
          (end (if (region-active-p) (region-end) (point-max)))
          (url-request-extra-headers
           '(("Content-Type" . "application/x-www-form-urlencoded")))
-         (url (es-get-url))
-         (url-request-method (es-get-request-method))
+         (params (or (es-find-params)
+                     `(,(es-get-url) . ,(es-get-request-method))))
+         (url (car params))
+         (url-request-method (cdr params))
          (url-request-data (buffer-substring beg end)))
     (es-perform-into-other-window url)))
+
+(defun es--at-current-header-p ()
+  "Returns t if at on a header line, nil otherwise."
+  (string-match-p (concat "^" (regexp-opt es-http-builtins-all) " .*$")
+                  (thing-at-point 'line)))
 
 (defun es-mark-request-body ()
   "Sets point to the beginning of the request body and mark at
 the end."
   (interactive)
+  (when (es--at-current-header-p)
+    ;; If we are at the header we are moved into the body.
+    (search-forward "{"))
   (condition-case
       (while t
         (backward-up-list))
       (error nil))
   (mark-sexp))
-
-(defun es-run-request ()
-  "Runs a request from somewhere inside of the request body."
-  (interactive)
-  (let ((params (es-find-params)))
-    (when params
-      (let* ((url (car (cdr params)))
-             (url-request-method (car params)))
-        (search-backward-regexp es--method-url-regexp nil t)
-        (forward-line)
-        (let ((start (point)))
-          (forward-sexp)
-          (buffer-substring-no-properties start (point)))))))
-
-(defun es--at-current-header-p ()
-  "Returns t if at on a header line, nil otherwise."
-  (string-match-p (concat "^" (regexp-opt es-http-builtins-all) " .*$")
-                  (buffer-substring-no-properties (line-beginning-position)
-                                                  (line-end-position))))
-
-(defun es-execute-request-if-found ()
-  "Executes a request with parameters if found, otherwises
-assumes a region is selected and calls `es-execute-region' to
-prompt for a method/url to send the region as a request to. Does
-not move the point."
-  (interactive)
-  ;; If we're currently on a parameter declaration, go forward a line and a
-  ;; character to place us into the sexp {}
-  (save-excursion
-    (when (or (eq 1 (point)) (es--at-current-header-p))
-      (beginning-of-line)
-      (forward-line)
-      (forward-char))
-    (let* ((params (es-find-params)))
-      (if params
-          (let* ((url-request-method (car params))
-                 (url (car (cdr params)))
-                 (url-request-extra-headers
-                  '(("Content-Type" . "application/x-www-form-urlencoded")))
-                 (url-request-data
-                  (save-excursion
-                    (es-mark-request-body)
-                    (buffer-substring (region-beginning)
-                                      (region-end)))))
-            (message "Issuing %s against %s" url-request-method url)
-            (es-perform-into-other-window url))
-        (es-execute-region)))))
 
 (defun es-goto-previous-request ()
   "Advance the point to the previous parameter declaration, if
@@ -382,13 +347,24 @@ available. Returns true if one was found, nil otherwise."
     (beginning-of-line)
     t))
 
-(defun es-run-all-requests ()
-  "Runs all requests, updating the buffer when they complete."
-  (interactive)
-  (beginning-of-buffer)
-  (es-execute-request-if-found)
-  (while (es-goto-next-request)
-    (es-execute-request-if-found)))
+(defun es-execute-request-dwim (prefix)
+  "Executes a request with parameters if found, otherwises
+assumes that the user wants to be prompted for a method/url to
+send the region as a request to/use the predefined vars. Does not
+move the point. If a prefix, `C-u', is given, all the requests in
+the buffer is executed from top to bottom."
+  (interactive "P")
+  (save-excursion
+    (when prefix
+      (beginning-of-buffer)
+      (unless (es--at-current-header-p)
+        (es-goto-next-request)))
+    (es-mark-request-body)
+    (es--execute-region)
+    (when prefix
+      (while (es-goto-next-request)
+        (es-mark-request-body)
+        (es-execute-region)))))
 
 (defun es-result-show-response ()
   "Shows the header of the response from the server in the
@@ -481,9 +457,7 @@ available. Returns true if one was found, nil otherwise."
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-p") 'es-goto-previous-request)
     (define-key map (kbd "C-c C-n") 'es-goto-next-request)
-    (define-key map (kbd "C-c C-x") 'es-run-all-requests)
-    (define-key map (kbd "C-c C-c") 'es-execute-request-if-found)
-    (define-key map (kbd "C-c C-e") 'es-execute-region)
+    (define-key map (kbd "C-c C-c") 'es-execute-request-dwim)
     (define-key map (kbd "C-c C-u") 'es-set-endpoint-url)
     (define-key map (kbd "C-c C-m") 'es-set-request-method)
     map)
