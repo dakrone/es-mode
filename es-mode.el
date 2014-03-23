@@ -367,24 +367,20 @@ not move the point."
 available. Returns true if one was found, nil otherwise."
   (interactive)
   (move-beginning-of-line)
-  (if (search-backward-regexp es--method-url-regexp nil t)
-      (progn
-        (message "Jumping to previous ES request")
-        (beginning-of-line)
-        t)
-    nil))
+  (when (search-backward-regexp es--method-url-regexp nil t)
+      (message "Jumping to previous ES request")
+      (beginning-of-line)
+      t))
 
 (defun es-goto-next-request ()
   "Advance the point to the next parameter declaration, if
 available. Returns true if one was found, nil otherwise."
   (interactive)
   (move-end-of-line)
-  (if (search-forward-regexp es--method-url-regexp nil t)
-      (progn
-        (message "Jumping to next ES request")
-        (beginning-of-line)
-        t)
-    nil))
+  (when (search-forward-regexp es--method-url-regexp nil t)
+      (message "Jumping to next ES request")
+    (beginning-of-line)
+    t))
 
 (defun es-run-all-requests ()
   "Runs all requests, updating the buffer when they complete."
