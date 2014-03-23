@@ -273,7 +273,7 @@ query. "
         "Do you really want to send a DELETE request?"
         'font-lock-face 'font-lock-warning-face))))
 
-(defun es-perform-into-other-window (url)
+(defun es--perform-into-other-window (url)
   "Perform a HTTP request, displaying the results in another
 window. Assumes `url-request-method' and `url-request-data' are
 already set."
