@@ -481,7 +481,7 @@ available. Returns true if one was found, nil otherwise."
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-p") 'es-goto-previous-request)
     (define-key map (kbd "C-c C-n") 'es-goto-next-request)
-    (define-key map (kbd "C-u C-c") 'es-run-all-requests)
+    (define-key map (kbd "C-c C-x") 'es-run-all-requests)
     (define-key map (kbd "C-c C-c") 'es-execute-request-if-found)
     (define-key map (kbd "C-c C-e") 'es-execute-region)
     (define-key map (kbd "C-c C-u") 'es-set-endpoint-url)
