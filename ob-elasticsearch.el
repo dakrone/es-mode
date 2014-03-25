@@ -58,13 +58,18 @@ just a normal .es file that contains the body of the block.."
                 url
                 body)))))
 
-(defun org-babel-execute:es (body params)
-  "Execute a block containing an Elasticsearch query with
-org-babel.  This function is called by
-`org-babel-execute-src-block'. If `es-warn-on-delete-query' is
-set to true, this function will also ask if the user really wants
-to do that."
-  (message "Executing an Elasticsearch query block.")
+(defun es-org-execute (url)
+  (with-current-buffer (url-retrieve-synchronously url)
+    (when (string-match "^.* 20[0-9] OK$" (or (thing-at-point 'line) ""))
+      (search-forward "\n\n")
+      (delete-region (point-min) (point))
+      (mark-whole-buffer)
+      (es-indent-line))
+    (buffer-string)))
+
+(defun es-org-babel-execute-with-params (body params)
+  "Executes the body of the request, use the org :header
+parameters for the method and URL specification."
   (let ((endpoint-url (cdr (assoc :url params)))
         (url-request-method (upcase (or (cdr (assoc :method params))
                                         es-default-request-method)))
@@ -72,14 +77,48 @@ to do that."
         (url-request-extra-headers
          '(("Content-Type" . "application/x-www-form-urlencoded"))))
     (when (es--warn-on-delete-yes-or-no-p)
-      (with-current-buffer (url-retrieve-synchronously
-                            (es-add-http endpoint-url))
-        (when (string-match "^.* 20[0-9] OK$" (or (thing-at-point 'line) ""))
-          (search-forward "\n\n")
-          (delete-region (point-min) (point))
-          (mark-whole-buffer)
-          (es-indent-line))
-        (buffer-string)))))
+      (es-org-execute (es-add-http endpoint-url)))))
+
+(defun es-org-execute-request-with-body-params ()
+  "Executes a request with parameters that are above the request.
+Does not move the point."
+  (interactive)
+  ;; If we're currently on a parameter declaration, go forward a line and a
+  ;; character to place us into the sexp {}
+  (save-excursion
+    (when (or (eq 1 (point)) (es-at-current-header-p))
+      (beginning-of-line)
+      (forward-line)
+      (forward-char))
+    (let* ((params (es-find-params))
+           (url-request-method (car params))
+           (url (car (cdr params)))
+           (url-request-extra-headers
+            '(("Content-Type" . "application/x-www-form-urlencoded")))
+           (url-request-data (es-get-request-body)))
+      (es-org-execute url))))
+
+(defun org-babel-execute:es (body params)
+  "Execute a block containing an Elasticsearch query with
+org-babel.  This function is called by
+`org-babel-execute-src-block'. If `es-warn-on-delete-query' is
+set to true, this function will also ask if the user really wants
+to do that."
+  ;; If we can find parameters in the body itself, use those
+  (if (save-excursion
+        (string-match-p (concat "^" (regexp-opt es-http-builtins) " .*$") body))
+      (with-temp-buffer
+        (setq buffer-read-only nil)
+        (insert body)
+        (beginning-of-buffer)
+        (setq output (es-org-execute-request-with-body-params))
+        (while (es-goto-next-request)
+          (let ((new-output
+                 (concat output "\n"
+                         (es-org-execute-request-with-body-params))))
+            (setq output new-output)))
+        output)
+    (es-org-babel-execute-with-params body params)))
 
 (provide 'ob-elasticsearch)
 ;;; ob-elasticsearch.el ends here
