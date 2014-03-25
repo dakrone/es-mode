@@ -39,10 +39,6 @@
   "Default arguments for evaluating an elasticsearch query
 block.")
 
-(defvar es-org-temporary-buffer nil
-  "Buffer local variable pointing to the buffer containing the
-  text from the most recent org-babel execution.")
-
 (defvar org-babel-tangle-lang-exts)
 (add-to-list 'org-babel-tangle-lang-exts '("es" . "es"))
 
@@ -111,25 +107,17 @@ to do that."
   ;; If we can find parameters in the body itself, use those
   (if (save-excursion
         (string-match-p (concat "^" (regexp-opt es-http-builtins) " .*$") body))
-      (progn
-        ;; if temp buffer lives, delete it all, otherwise create it
-        (if (buffer-live-p es-org-temporary-buffer)
-            (with-current-buffer es-org-temporary-buffer
-              (delete-region (point-min) (point)))
-          (setq es-org-temporary-buffer
-                (generate-new-buffer
-                 (format "*org-ES: %s*" (buffer-name)))))
-        (with-current-buffer es-org-temporary-buffer
-          (setq buffer-read-only nil)
-          (insert body)
-          (beginning-of-buffer)
-          (setq output (es-org-execute-request-with-body-params))
-          (while (es-goto-next-request)
-            (let ((new-output
-                   (concat output "\n"
-                           (es-org-execute-request-with-body-params))))
-              (setq output new-output)))
-          output))
+      (with-temp-buffer
+        (setq buffer-read-only nil)
+        (insert body)
+        (beginning-of-buffer)
+        (setq output (es-org-execute-request-with-body-params))
+        (while (es-goto-next-request)
+          (let ((new-output
+                 (concat output "\n"
+                         (es-org-execute-request-with-body-params))))
+            (setq output new-output)))
+        output)
     (es-org-babel-execute-with-params body params)))
 
 (provide 'ob-elasticsearch)
