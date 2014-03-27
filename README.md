@@ -43,6 +43,8 @@ automatically load..
   queries
 - Better indenting than sh-mode (indents like js-mode)
 - Sending the queries as a http-request to Elasticsearch endpoints.
+- navigate via goto-(next|previous)-request with `C-c C-n` and `C-c C-p` (when
+  using parameters)
 
 ### Example
 
