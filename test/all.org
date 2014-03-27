@@ -1,4 +1,6 @@
 * Testing ob-elasticsearch mode
+Full URL
+
 #+BEGIN_SRC es :method POST :url http://localhost:9200/_search?pretty=true :tangle all.sh
 {
   "query": {
@@ -7,10 +9,25 @@
 }
 #+END_SRC
 
-#+BEGIN_SRC es :method POST :url localhost:9200/_search?pretty=true :tangle yes
+Limited URL, no method set
+
+#+BEGIN_SRC es :url localhost:9200/_search?pretty=true :tangle yes
 {
   "query": {
     "match_all": {}
   }
 }
+#+END_SRC
+
+No url or method, included in body params
+
+#+BEGIN_SRC es :tangle yes
+GET /_cluster/health?pretty
+{}
+
+GET /
+{}
+
+GET /_cluster/health
+{}
 #+END_SRC
