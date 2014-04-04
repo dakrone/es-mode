@@ -308,7 +308,7 @@ vars."
          (url (car params))
          (url-request-method (cdr params))
          (url-request-data (buffer-substring beg end)))
-    (es-perform-into-other-window url)))
+    (es--perform-into-other-window url)))
 
 (defun es--at-current-header-p ()
   "Returns t if at on a header line, nil otherwise."
