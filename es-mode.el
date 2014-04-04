@@ -174,7 +174,7 @@ the user on DELETE requests."
          (concat es-default-base url))
         ((not (string-prefix-p "http://" url))
          (concat "http://" url))
-        (t (error "Could not fix url."))))
+        (t url)))
 
 (defun es--find-params ()
   "Search backwards to find text like \"POST /_search\",
