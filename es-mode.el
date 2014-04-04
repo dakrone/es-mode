@@ -169,6 +169,13 @@ the user on DELETE requests."
           (regexp-opt es-http-builtins-all)
           "\\) \\(.*\\)$"))
 
+(defun es--fix-url (url)
+  (cond ((string-prefix-p "_" url)
+         (concat es-default-base url))
+        ((not (string-prefix-p "http://" url))
+         (concat "http://" url))
+        (t (error "Could not fix url."))))
+
 (defun es-find-params ()
   "Search backwards to find text like \"POST /_search\",
   returning a list of method and full URL, prepending
@@ -179,7 +186,7 @@ the user on DELETE requests."
     (if (search-backward-regexp es--method-url-regexp nil t)
         (let ((method (match-string 1))
               (uri (match-string 2)))
-          `(,method . ,(es-add-http (concat es-default-base uri))))
+          `(,method . ,(es--fix-url uri)))
       (message "Could not find <method> <url> parameters!")
       nil)))
 
