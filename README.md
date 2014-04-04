@@ -43,10 +43,49 @@ automatically load..
   queries
 - Better indenting than sh-mode (indents like js-mode)
 - Sending the queries as a http-request to Elasticsearch endpoints.
+- navigate via goto-(next|previous)-request with `C-c C-n` and `C-c C-p` (when
+  using parameters)
 
 ### Example
 
-See `test.es`, here's a screenshot from my theme:
+You can specify requests with two different formats:
+
+#### With parameters
+
+In the document, specify parameters similar to Sense, like so:
+
+```json
+POST /myindex/_search?pretty
+{
+  "query": {
+    "match_all": {}
+  }
+}
+```
+
+Hitting `C-c C-c` anywhere on the parameter or body of the request will execute
+the request, opening a response buffer. The base-url can be configured by
+customizing the `es-default-base` var.
+
+#### Without parameters
+
+Without any parameters, you can specify a request:
+
+```json
+{
+  "query": {
+    "match_all": {}
+  }
+}
+```
+
+With the request region highlighted, hit `C-c C-c` to execute it. The first time
+you do this you will be prompted for the URL and HTTP method. You can also set
+the URL with `C-c C-u` and the method with `C-c C-m`.
+
+#### Screenshot
+
+See `test.es`, `test2.es`, and `all.org`, here's a screenshot from my theme:
 
 ![picture of es-mode](http://writequit.org/files/es-mode.png)
 
@@ -65,7 +104,20 @@ And then you will be able to hit `C-c C-c` on code like this in your org-mode
 file:
 
 ```
-#+BEGIN_SRC elasticsearch :method POST :url localhost:9200/_search?pretty
+#+BEGIN_SRC es
+POST /_search?pretty
+{
+  "query": {
+    "match_all": {}
+  }
+}
+#+END_SRC
+```
+
+OR (without parameters):
+
+```
+#+BEGIN_SRC es :method POST :url localhost:9200/_search?pretty
 {
   "query": {
     "match_all": {}
@@ -77,6 +129,10 @@ file:
 org-mode uses the arguments `:url` and `:method` to know where and how
 to send a query. If they are not present org-mode will use
 `es-default-url` and `es-defaul-request-method` instead.
+
+Tangling these blocks will produce `<filename>.es`, if you specify the filename
+with `:tangle foo.sh`, es-mode will instead create a curl request for the body
+of the request.
 
 ### Feedback
 
