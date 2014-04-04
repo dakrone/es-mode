@@ -176,12 +176,11 @@ the user on DELETE requests."
          (concat "http://" url))
         (t (error "Could not fix url."))))
 
-(defun es-find-params ()
+(defun es--find-params ()
   "Search backwards to find text like \"POST /_search\",
   returning a list of method and full URL, prepending
   `es-default-base' to the URL. Returns `false' if no parameters
   are found."
-  (interactive)
   (save-excursion
     (if (search-backward-regexp es--method-url-regexp nil t)
         (let ((method (match-string 1))
