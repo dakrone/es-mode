@@ -322,10 +322,10 @@ the end."
   (when (es--at-current-header-p)
     ;; If we are at the header we are moved into the body.
     (search-forward "{"))
-  (condition-case
+  (condition-case nil
       (while t
         (backward-up-list))
-      (error nil))
+    (error nil))
   (mark-sexp))
 
 (defun es-goto-previous-request ()
