@@ -277,25 +277,6 @@ query. "
         "Do you really want to send a DELETE request?"
         'font-lock-face 'font-lock-warning-face))))
 
-(defun es--perform-into-other-window (url)
-  "Perform a HTTP request, displaying the results in another
-window. Assumes `url-request-method' and `url-request-data' are
-already set."
-  (when (es--warn-on-delete-yes-or-no-p)
-    (unless (buffer-live-p es-results-buffer)
-      (setq es-results-buffer
-            (generate-new-buffer
-             (format "*ES: %s*" (buffer-name))))
-      (with-current-buffer es-results-buffer
-        (setq buffer-read-only nil)
-        (es-result-mode)))
-    (with-current-buffer es-results-buffer
-      (let ((buffer-read-only nil))
-        (delete-region (point-min) (point-max))))
-    (message "Issuing %s against %s" url-request-method url)
-    (url-retrieve url 'es-result--handle-response (list es-results-buffer))
-    (view-buffer-other-window es-results-buffer)
-    (other-window -1)))
 
 (defun es--execute-region ()
   "Submits the active region as a query to the specified
@@ -307,11 +288,25 @@ vars."
          (url-request-extra-headers
           '(("Content-Type" . "application/x-www-form-urlencoded")))
          (params (or (es-find-params)
-                     `(,(es-get-url) . ,(es-get-request-method))))
-         (url (car params))
-         (url-request-method (cdr params))
-         (url-request-data (buffer-substring beg end)))
-    (es--perform-into-other-window url)))
+                     `(,(es-get-request-method) . ,(es-get-url))))
+         (url (cdr params))
+         (url-request-method (car params))
+         (url-request-data (buffer-substring-no-properties beg end)))
+    (when (es--warn-on-delete-yes-or-no-p)
+      (unless (buffer-live-p es-results-buffer)
+        (setq es-results-buffer
+              (generate-new-buffer
+               (format "*ES: %s*" (buffer-name))))
+        (with-current-buffer es-results-buffer
+          (es-result-mode)
+          (setq buffer-read-only t)))
+      (with-current-buffer es-results-buffer
+        (let ((buffer-read-only nil))
+          (delete-region (point-min) (point-max))))
+      (message "Issuing %s against %s" url-request-method url)
+      (url-retrieve url 'es-result--handle-response (list es-results-buffer))
+      (view-buffer-other-window es-results-buffer)
+      (other-window -1))))
 
 (defun es--at-current-header-p ()
   "Returns t if at on a header line, nil otherwise."
