@@ -320,7 +320,7 @@ vars."
 the end."
   (interactive)
   (if (es--at-current-header-p)
-    ;; If we are at the header we are moved into the body.
+      ;; If we are at the header we are moved into the body.
       (search-forward "{")
     (ignore-errors
       (backward-list)))
@@ -335,9 +335,9 @@ available. Returns true if one was found, nil otherwise."
   (interactive)
   (move-beginning-of-line)
   (when (search-backward-regexp es--method-url-regexp nil t)
-      (message "Jumping to previous ES request")
-      (beginning-of-line)
-      t))
+    (message "Jumping to previous ES request")
+    (beginning-of-line)
+    t))
 
 (defun es-goto-next-request ()
   "Advance the point to the next parameter declaration, if
@@ -345,7 +345,7 @@ available. Returns true if one was found, nil otherwise."
   (interactive)
   (move-end-of-line)
   (when (search-forward-regexp es--method-url-regexp nil t)
-      (message "Jumping to next ES request")
+    (message "Jumping to next ES request")
     (beginning-of-line)
     t))
 
