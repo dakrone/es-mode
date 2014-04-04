@@ -277,6 +277,7 @@ query. "
         "Do you really want to send a DELETE request?"
         'font-lock-face 'font-lock-warning-face))))
 
+(defvar es--query-number 0)
 
 (defun es--execute-region ()
   "Submits the active region as a query to the specified
@@ -296,7 +297,9 @@ vars."
       (unless (buffer-live-p es-results-buffer)
         (setq es-results-buffer
               (generate-new-buffer
-               (format "*ES: %s*" (buffer-name))))
+               (if (zerop (es--query-number))
+                   (format "*ES: %s [%d]*" (buffer-name) es--query-number)
+                 (format "*ES: %s*" (buffer-name)))))
         (with-current-buffer es-results-buffer
           (es-result-mode)
           (setq buffer-read-only t)))
@@ -361,9 +364,12 @@ the buffer is executed from top to bottom."
     (es-mark-request-body)
     (es--execute-region)
     (when prefix
+      (setq es--query-number 1)
       (while (es-goto-next-request)
         (es-mark-request-body)
-        (es-execute-region)))))
+        (es--execute-region)
+        (setq es--query-number (1+ es--query-number)))
+      (setq es--query-number 0))))
 
 (defun es-result-show-response ()
   "Shows the header of the response from the server in the
