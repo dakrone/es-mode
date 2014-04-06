@@ -247,14 +247,17 @@ in which case it prompts the user."
       (append es-top-level-fields es-query-types es-facet-types
               es-parent-types es-keywords)))))
 
-(defun es-result--handle-response (status &optional results-buffer)
+(defun es-result--handle-response (status &optional results-buffer-name)
   "Handles the response from the server returns after sending a
 query. "
   (let ((http-results-buffer (current-buffer)))
-    (set-buffer results-buffer)
+    (set-buffer
+     (get-buffer-create results-buffer-name))
     (let ((buffer-read-only nil))
       (if (equal :error (car status))
-          (insert "Error: could not open connection to server.")
+          (insert "ERROR: Could not connect to server.")
+        (delete-region (point-min) (point-max))
+        (es-result-mode)
         (insert-buffer-substring http-results-buffer)
         (kill-buffer http-results-buffer)
         (insert "\n")
@@ -291,22 +294,16 @@ vars."
                      `(,(es-get-request-method) . ,(es-get-url))))
          (url (cdr params))
          (url-request-method (car params))
-         (url-request-data (buffer-substring-no-properties beg end)))
+         (url-request-data (buffer-substring-no-properties beg end))
+         (result-buffer-name (if (zerop es--query-number)
+                                 (format "*ES: %s*" (buffer-name))
+                                 (format "*ES: %s [%d]*"
+                                         (buffer-name)
+                                         es--query-number))))
     (when (es--warn-on-delete-yes-or-no-p)
-      (unless (buffer-live-p es-results-buffer)
-        (setq es-results-buffer
-              (generate-new-buffer
-               (if (zerop es--query-number)
-                   (format "*ES: %s [%d]*" (buffer-name) es--query-number)
-                 (format "*ES: %s*" (buffer-name)))))
-        (with-current-buffer es-results-buffer
-          (es-result-mode)
-          (setq buffer-read-only t)))
-      (with-current-buffer es-results-buffer
-        (let ((buffer-read-only nil))
-          (delete-region (point-min) (point-max))))
       (message "Issuing %s against %s" url-request-method url)
-      (url-retrieve url 'es-result--handle-response (list es-results-buffer))
+      (url-retrieve url 'es-result--handle-response (list result-buffer-name))
+      (setq es-results-buffer (get-buffer-create result-buffer-name))
       (view-buffer-other-window es-results-buffer)
       (other-window -1))))
 
