@@ -77,7 +77,7 @@ parameters for the method and URL specification."
         (url-request-extra-headers
          '(("Content-Type" . "application/x-www-form-urlencoded"))))
     (when (es--warn-on-delete-yes-or-no-p)
-      (es-org-execute (es-add-http endpoint-url)))))
+      (es-org-execute (es--fix-url endpoint-url)))))
 
 (defun es-org-execute-request-with-body-params ()
   "Executes a request with parameters that are above the request.
