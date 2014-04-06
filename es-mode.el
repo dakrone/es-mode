@@ -296,7 +296,7 @@ vars."
       (unless (buffer-live-p es-results-buffer)
         (setq es-results-buffer
               (generate-new-buffer
-               (if (zerop (es--query-number))
+               (if (zerop es--query-number)
                    (format "*ES: %s [%d]*" (buffer-name) es--query-number)
                  (format "*ES: %s*" (buffer-name)))))
         (with-current-buffer es-results-buffer
