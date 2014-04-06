@@ -287,7 +287,7 @@ vars."
          (end (if (region-active-p) (region-end) (point-max)))
          (url-request-extra-headers
           '(("Content-Type" . "application/x-www-form-urlencoded")))
-         (params (or (es-find-params)
+         (params (or (es--find-params)
                      `(,(es-get-request-method) . ,(es-get-url))))
          (url (cdr params))
          (url-request-method (car params))
