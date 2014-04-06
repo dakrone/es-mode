@@ -254,11 +254,11 @@ query. "
     (set-buffer
      (get-buffer-create results-buffer-name))
     (let ((buffer-read-only nil))
+      (delete-region (point-min) (point-max))
       (if (equal 'connection-failed (cadadr status))
           (progn
             (insert "ERROR: Could not connect to server.")
             (setq mode-name (format "ES[failed]")))
-        (delete-region (point-min) (point-max))
         (es-result-mode)
         (insert-buffer-substring http-results-buffer)
         (kill-buffer http-results-buffer)
