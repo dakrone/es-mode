@@ -358,16 +358,14 @@ the buffer is executed from top to bottom."
   (save-excursion
     (when prefix
       (beginning-of-buffer)
-      (unless (es--at-current-header-p)
-        (es-goto-next-request)))
+      (setq es--query-number 1))
     (es-mark-request-body)
     (es--execute-region)
     (when prefix
-      (setq es--query-number 1)
       (while (es-goto-next-request)
+        (setq es--query-number (1+ es--query-number))
         (es-mark-request-body)
-        (es--execute-region)
-        (setq es--query-number (1+ es--query-number)))
+        (es--execute-region))
       (setq es--query-number 0))))
 
 (defun es-result-show-response ()
