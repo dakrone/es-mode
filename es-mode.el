@@ -333,7 +333,7 @@ the end."
   "Advance the point to the previous parameter declaration, if
 available. Returns true if one was found, nil otherwise."
   (interactive)
-  (move-beginning-of-line)
+  (move-beginning-of-line nil)
   (when (search-backward-regexp es--method-url-regexp nil t)
     (message "Jumping to previous ES request")
     (beginning-of-line)
@@ -343,7 +343,7 @@ available. Returns true if one was found, nil otherwise."
   "Advance the point to the next parameter declaration, if
 available. Returns true if one was found, nil otherwise."
   (interactive)
-  (move-end-of-line)
+  (move-end-of-line nil)
   (when (search-forward-regexp es--method-url-regexp nil t)
     (message "Jumping to next ES request")
     (beginning-of-line)
