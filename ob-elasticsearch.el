@@ -105,8 +105,7 @@ org-babel.  This function is called by
 set to true, this function will also ask if the user really wants
 to do that."
   ;; If we can find parameters in the body itself, use those
-  (if (save-excursion
-        (string-match-p (concat "^" (regexp-opt es-http-builtins) " .*$") body))
+  (if (string-match-p (concat "^" (regexp-opt es-http-builtins) " .*$") body)
       (with-temp-buffer
         (setq buffer-read-only nil)
         (insert body)
