@@ -90,9 +90,9 @@ Does not move the point."
       (beginning-of-line)
       (forward-line)
       (forward-char))
-    (let* ((params (es-find-params))
+    (let* ((params (es--find-params))
            (url-request-method (car params))
-           (url (car (cdr params)))
+           (url (cdr params))
            (url-request-extra-headers
             '(("Content-Type" . "application/x-www-form-urlencoded")))
            (url-request-data (es-get-request-body)))
