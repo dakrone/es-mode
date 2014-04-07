@@ -312,8 +312,7 @@ vars."
 
 (defun es--at-current-header-p ()
   "Returns t if at on a header line, nil otherwise."
-  (string-match-p (concat "^" (regexp-opt es-http-builtins-all) " .*$")
-                  (thing-at-point 'line)))
+  (looking-at (concat "^" (regexp-opt es-http-builtins-all) " .*$")))
 
 (defun es-mark-request-body ()
   "Sets point to the beginning of the request body and mark at
