@@ -86,16 +86,16 @@ Does not move the point."
   ;; If we're currently on a parameter declaration, go forward a line and a
   ;; character to place us into the sexp {}
   (save-excursion
-    (when (or (eq 1 (point)) (es-at-current-header-p))
-      (beginning-of-line)
-      (forward-line)
-      (forward-char))
+    (when (or (eq 1 (point)) (es--at-current-header-p))
+      (es-mark-request-body))
     (let* ((params (es--find-params))
            (url-request-method (car params))
            (url (cdr params))
            (url-request-extra-headers
             '(("Content-Type" . "application/x-www-form-urlencoded")))
-           (url-request-data (es-get-request-body)))
+           (url-request-data (buffer-substring-no-properties
+                              (region-beginning)
+                              (region-end))))
       (es-org-execute url))))
 
 (defun org-babel-execute:es (body params)
