@@ -319,15 +319,14 @@ vars."
   "Sets point to the beginning of the request body and mark at
 the end."
   (interactive)
-  (condition-case nil
-      (backward-up-list)
-    (error (ignore-errors
-             (search-backward "{"))))
+  (beginning-of-line)
+  (cond ((es--at-current-header-p)
+         (search-forward "{"))
+        ((looking-at "^\\s *$")
+         (forward-line -1)))
   (ignore-errors
     (while t
       (backward-up-list)))
-  (search-forward "{")
-  (backward-up-list)
   (mark-sexp))
 
 (defun es-goto-previous-request ()
