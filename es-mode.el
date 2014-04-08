@@ -318,35 +318,49 @@ vars."
   "Sets point to the beginning of the request body and mark at
 the end."
   (interactive)
-  (beginning-of-line)
-  (cond ((es--at-current-header-p)
-         (search-forward "{"))
-        ((looking-at "^\\s *$")
-         (forward-line -1)))
-  (ignore-errors
-    (while t
-      (backward-up-list)))
-  (mark-sexp))
+  (let ((p (point)))
+   (beginning-of-line)
+   (cond ((es--at-current-header-p)
+          (search-forward "{"))
+         ((looking-at "^\\s *$")
+          (forward-line -1)))
+   (ignore-errors
+     (while t
+       (backward-up-list)))
+   (if (looking-at "{")
+       (mark-sexp)
+     (goto-char p))))
 
 (defun es-goto-previous-request ()
   "Advance the point to the previous parameter declaration, if
 available. Returns true if one was found, nil otherwise."
   (interactive)
-  (move-beginning-of-line nil)
-  (when (search-backward-regexp es--method-url-regexp nil t)
-    (message "Jumping to previous ES request")
-    (beginning-of-line)
-    t))
+  (es-mark-request-body)
+  (deactivate-mark)
+  (ignore-errors
+    (search-backward "}"))
+  (es-mark-request-body)
+  (deactivate-mark)
+  (previous-line)
+  (beginning-of-line)
+  (unless (looking-at es--method-url-regexp)
+    (search-forward "{")
+    (backward-char)))
 
 (defun es-goto-next-request ()
   "Advance the point to the next parameter declaration, if
 available. Returns true if one was found, nil otherwise."
   (interactive)
-  (move-end-of-line nil)
-  (when (search-forward-regexp es--method-url-regexp nil t)
-    (message "Jumping to next ES request")
-    (beginning-of-line)
-    t))
+  (es-mark-request-body)
+  (when (looking-at "{")
+    (forward-sexp))
+  (deactivate-mark)
+  (search-forward "{")
+  (previous-line)
+  (beginning-of-line)
+  (unless (looking-at es--method-url-regexp)
+    (search-forward "{")
+    (backward-char)))
 
 (defun es-execute-request-dwim (prefix)
   "Executes a request with parameters if found, otherwises
