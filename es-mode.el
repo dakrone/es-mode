@@ -73,6 +73,9 @@
 (defvar es-endpoint-url-history (list es-default-url)
   "The history over used URLs.")
 
+(defvar es-json-result-hook nil
+  "Hook called in the es-results-buffer if the response is a JSON response.")
+
 (defcustom es-default-request-method "POST"
   "The default request method used for queries."
   :group 'es
@@ -279,6 +282,11 @@ query. "
           (setq es-result-response
                 (buffer-substring (point-min) (point)))
           (delete-region (point-min) (point)))
+        (when (string-match "^Content-type: \\(.*\\)$" es-result-response)
+          (let ((content-type (match-string 1 es-result-response)))
+            (cond ((string-lessp "application/json" content-type) (run-hooks 'es-json-result-hook))
+                  ;; Could handle other types here...
+                  )))
         (setq mode-name "ES[finished]")))))
 
 (defun es--warn-on-delete-yes-or-no-p ()
