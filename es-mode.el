@@ -45,6 +45,7 @@
 (require 'js)
 (require 'url)
 (require 'url-util)
+(require 'url-parse)
 
 (defgroup es nil
   "Major mode for editing Elasticsearch queries."
@@ -57,11 +58,6 @@
 
 (defcustom es-default-url "http://localhost:9200/_search?pretty=true"
   "The default URL of the Elasticsearch endpoint."
-  :group 'es
-  :type 'string)
-
-(defcustom es-default-base "http://localhost:9200/"
-  "Default URL base to be added to Sense-like requests"
   :group 'es
   :type 'string)
 
@@ -171,8 +167,13 @@ the user on DELETE requests."
 
 (defun es--fix-url (url)
   (cond ((or (string-prefix-p "_" url)
-             (string-prefix-p "/_" url))
-         (concat es-default-base url))
+             (string-prefix-p "/" url))
+         (let ((base (url-generic-parse-url (es-get-url))))
+           (setf (url-filename base)
+                 (if (string-prefix-p "/" url)
+                     url
+                   (concat "/" url)))
+           (url-recreate-url base)))
         ((not (string-prefix-p "http://" url))
          (concat "http://" url))
         (t url)))

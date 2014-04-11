@@ -35,7 +35,8 @@
 
 (defvar org-babel-default-header-args:es
   `((:url . ,es-default-url)
-    (:method . ,es-default-request-method))
+    (:method . ,es-default-request-method)
+    (:header . "no"))
   "Default arguments for evaluating an elasticsearch query
 block.")
 
@@ -58,7 +59,7 @@ just a normal .es file that contains the body of the block.."
                 url
                 body)))))
 
-(defun es-org-execute-request ()
+(defun es-org-execute-request (keep-header)
   "Executes a request with parameters that are above the request.
 Does not move the point."
   (interactive)
@@ -74,6 +75,11 @@ Does not move the point."
       (message "Issuing %s against %s" url-request-method url)
       (let ((output ""))
         (with-current-buffer (url-retrieve-synchronously url)
+          (goto-char (point-min))
+          (when (and (looking-at "^.* 20[0-9] OK$")
+                     (not (string= "yes" keep-header)))
+            (search-forward "\n\n")
+            (delete-region (point-min) (point)))
           (setq output (buffer-string))
           (kill-buffer))
         output))))
@@ -90,21 +96,19 @@ to do that."
     (setq es-endpoint-url (cdr (assoc :url params)))
     (insert body)
     (beginning-of-buffer)
-    (let ((output ""))
-      (es-mark-request-body)
-      (when mark-active
-        (setq output
-              (concat output
-                      (es-org-execute-request))))
+    (es-mark-request-body)
+    (let ((output (when mark-active
+                    (es-org-execute-request
+                     (cdr (assoc :header params))))))
       (ignore-errors
         (while t
-          (es-goto-next-request)
           (setq output (concat output "\n"))
+          (es-goto-next-request)
           (es-mark-request-body)
-          (es-org-execute-request)
           (setq output
                 (concat output
-                        (es-org-execute-request)))))
+                        (es-org-execute-request
+                         (cdr (assoc :header params)))))))
       output)))
 
 (provide 'ob-elasticsearch)
