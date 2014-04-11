@@ -5,7 +5,7 @@
 
 ;; Author: Lee Hinman <lee@writequit.org>
 ;; URL: http://www.github.com/dakrone/es-mode
-;; Version: 2.1.0
+;; Version: 3.0.0
 ;; Keywords: elasticsearch
 
 ;; This file is not part of GNU Emacs.
@@ -164,21 +164,29 @@ the user on DELETE requests."
     "geohash_grid" "script" "percentiles")
   "Leaf-type facets")
 
-(defun es-find-params ()
+(defconst es--method-url-regexp
+  (concat "^\\("
+          (regexp-opt es-http-builtins-all)
+          "\\) \\(.*\\)$"))
+
+(defun es--fix-url (url)
+  (cond ((or (string-prefix-p "_" url)
+             (string-prefix-p "/_" url))
+         (concat es-default-base url))
+        ((not (string-prefix-p "http://" url))
+         (concat "http://" url))
+        (t url)))
+
+(defun es--find-params ()
   "Search backwards to find text like \"POST /_search\",
   returning a list of method and full URL, prepending
   `es-default-base' to the URL. Returns `false' if no parameters
   are found."
-  (interactive)
   (save-excursion
-    (if (search-backward-regexp
-         (concat "^\\("
-                 (regexp-opt es-http-builtins-all)
-                 "\\) \\(.*\\)$")
-         nil t)
+    (if (search-backward-regexp es--method-url-regexp nil t)
         (let ((method (match-string 1))
               (uri (match-string 2)))
-          (list method (es-add-http (concat es-default-base uri))))
+          `(,method . ,(es--fix-url uri)))
       (message "Could not find <method> <url> parameters!")
       nil)))
 
@@ -197,18 +205,14 @@ the user on DELETE requests."
           (add-to-list 'es-endpoint-url-history new-url)
           new-url)))
 
-(defun es-add-http (url)
-  "Add a leading `http://' if no scheme is specified in the URL."
-  (if (not (string-match "^http" url))
-      (concat "http://" url)
-    url))
-
 (defun es-get-url ()
   "Returns the URL for the ES queries in this buffer unless it
 has not been set, in which case it prompts the user."
   (let ((url (or (and (not es-prompt-url) es-endpoint-url)
                  (command-execute 'es-set-endpoint-url))))
-    (es-add-http url)))
+    (if (not (string-prefix-p "http://" url t))
+        (concat "http://" url)
+      url)))
 
 (defun es-set-request-method (new-request-method)
   "Set the request method to be used for the buffer."
@@ -244,17 +248,22 @@ in which case it prompts the user."
       (append es-top-level-fields es-query-types es-facet-types
               es-parent-types es-keywords)))))
 
-(defun es-result--handle-response (status &optional results-buffer)
+(defun es-result--handle-response (status &optional results-buffer-name)
   "Handles the response from the server returns after sending a
 query. "
   (let ((http-results-buffer (current-buffer)))
-    (set-buffer results-buffer)
+    (set-buffer
+     (get-buffer-create results-buffer-name))
     (let ((buffer-read-only nil))
-      (insert-buffer-substring http-results-buffer)
-      (insert "\n")
-      (kill-buffer http-results-buffer)
-      (if (zerop (buffer-size))
-          (insert "Error: could not open connection to server.")
+      (delete-region (point-min) (point-max))
+      (if (equal 'connection-failed (cadadr status))
+          (progn
+            (insert "ERROR: Could not connect to server.")
+            (setq mode-name (format "ES[failed]")))
+        (es-result-mode)
+        (insert-buffer-substring http-results-buffer)
+        (kill-buffer http-results-buffer)
+        (insert "\n")
         (goto-char (point-min))
         (when (string-match "^.* 20[0-9] OK$" (thing-at-point 'line))
           (search-forward "\n\n")
@@ -273,143 +282,105 @@ query. "
         "Do you really want to send a DELETE request?"
         'font-lock-face 'font-lock-warning-face))))
 
-(defun es-perform-into-other-window (url)
-  "Perform a HTTP request, displaying the results in another
-window. Assumes `url-request-method' and `url-request-data' are
-already set."
-  (when (es--warn-on-delete-yes-or-no-p)
-    (unless (buffer-live-p es-results-buffer)
-      (setq es-results-buffer
-            (generate-new-buffer
-             (format "*ES: %s*" (buffer-name))))
-      (with-current-buffer es-results-buffer
-        (setq buffer-read-only nil)
-        (es-result-mode)))
-    (with-current-buffer es-results-buffer
-      (let ((buffer-read-only nil))
-        (delete-region (point-min) (point-max))))
-    (url-retrieve url 'es-result--handle-response (list es-results-buffer))
-    (view-buffer-other-window es-results-buffer)
-    (other-window -1)))
+(defvar es--query-number 0)
 
-(defun es-execute-region ()
+(defun es--execute-region ()
   "Submits the active region as a query to the specified
-endpoint. If the region is not active, the whole buffer is used."
-  (interactive)
+endpoint. If the region is not active, the whole buffer is
+used. Uses the params if it can find them or alternativly the
+vars."
   (let* ((beg (if (region-active-p) (region-beginning) (point-min)))
          (end (if (region-active-p) (region-end) (point-max)))
          (url-request-extra-headers
           '(("Content-Type" . "application/x-www-form-urlencoded")))
-         (url (es-get-url))
-         (url-request-method (es-get-request-method))
-         (url-request-data (buffer-substring beg end)))
-    (es-perform-into-other-window url)))
+         (params (or (es--find-params)
+                     `(,(es-get-request-method) . ,(es-get-url))))
+         (url (cdr params))
+         (url-request-method (car params))
+         (url-request-data (buffer-substring-no-properties beg end))
+         (result-buffer-name (if (zerop es--query-number)
+                                 (format "*ES: %s*" (buffer-name))
+                                 (format "*ES: %s [%d]*"
+                                         (buffer-name)
+                                         es--query-number))))
+    (when (es--warn-on-delete-yes-or-no-p)
+      (message "Issuing %s against %s" url-request-method url)
+      (url-retrieve url 'es-result--handle-response (list result-buffer-name))
+      (setq es-results-buffer (get-buffer-create result-buffer-name))
+      (view-buffer-other-window es-results-buffer)
+      (other-window -1))))
 
-(defun es-get-request-body ()
-  "Return the body of a request when executed inside of text
-surrounded by {}, stops searching when a blank newline is found
-later than the current point."
-  (interactive)
-  (save-excursion
-    (search-backward-regexp "^{")
-    (let* ((start (point)))
-      (forward-sexp)
-      (buffer-substring-no-properties start (point)))))
-
-(defun es-run-request ()
-  "Runs a request from somewhere inside of the request body."
-  (interactive)
-  (let ((params (es-find-params)))
-    (when params
-      (let* ((url (car (cdr params)))
-             (url-request-method (car params)))
-        (search-backward-regexp
-         (concat "^\\("
-                 (regexp-opt es-http-builtins-all)
-                 "\\) \\(.*\\)$")
-         nil t)
-        (forward-line)
-        (let ((start (point)))
-          (forward-sexp)
-          (buffer-substring-no-properties start (point)))))))
-
-(defun es-at-current-header-p ()
+(defun es--at-current-header-p ()
   "Returns t if at on a header line, nil otherwise."
-  (save-excursion
-    (let ((line (buffer-substring-no-properties (line-beginning-position)
-                                                (line-end-position))))
-      (if (string-match-p (concat "^" (regexp-opt es-http-builtins-all) " .*$")
-                          line)
-          t
-        nil))))
+  (looking-at (concat "^" (regexp-opt es-http-builtins-all) " .*$")))
 
-(defun es-execute-request-if-found ()
-  "Executes a request with parameters if found, otherwises
-assumes a region is selected and calls `es-execute-region' to
-prompt for a method/url to send the region as a request to. Does
-not move the point."
+(defun es-mark-request-body ()
+  "Sets point to the beginning of the request body and mark at
+the end."
   (interactive)
-  ;; If we're currently on a parameter declaration, go forward a line and a
-  ;; character to place us into the sexp {}
-  (save-excursion
-    (when (or (eq 1 (point)) (es-at-current-header-p))
-      (beginning-of-line)
-      (forward-line)
-      (forward-char))
-    (let* ((params (es-find-params)))
-      (if params
-          (let* ((url-request-method (car params))
-                 (url (car (cdr params)))
-                 (url-request-extra-headers
-                  '(("Content-Type" . "application/x-www-form-urlencoded")))
-                 (url-request-data (es-get-request-body)))
-            (message "Issuing %s against %s" url-request-method url)
-            (es-perform-into-other-window url))
-        (es-execute-region)))))
+  (let ((p (point)))
+   (beginning-of-line)
+   (cond ((es--at-current-header-p)
+          (search-forward "{"))
+         ((looking-at "^\\s *$")
+          (forward-line -1)))
+   (ignore-errors
+     (while t
+       (backward-up-list)))
+   (if (looking-at "{")
+       (mark-sexp)
+     (goto-char p))))
 
 (defun es-goto-previous-request ()
   "Advance the point to the previous parameter declaration, if
 available. Returns true if one was found, nil otherwise."
   (interactive)
-  ;; Go backwards a line if we're already at a header
-  (when (es-at-current-header-p)
-    (forward-line -1))
-  (if (search-backward-regexp
-       (concat "^\\("
-               (regexp-opt es-http-builtins-all)
-               "\\) \\(.*\\)$")
-       nil t)
-      (progn
-        (message "Jumping to previous ES request")
-        (beginning-of-line)
-        t)
-    nil))
+  (es-mark-request-body)
+  (deactivate-mark)
+  (ignore-errors
+    (search-backward "}"))
+  (es-mark-request-body)
+  (deactivate-mark)
+  (previous-line)
+  (beginning-of-line)
+  (unless (looking-at es--method-url-regexp)
+    (search-forward "{")
+    (backward-char)))
 
 (defun es-goto-next-request ()
   "Advance the point to the next parameter declaration, if
 available. Returns true if one was found, nil otherwise."
   (interactive)
-  ;; Go forward a line if we're already at a header
-  (when (es-at-current-header-p)
-    (forward-line))
-  (if (search-forward-regexp
-       (concat "^\\("
-               (regexp-opt es-http-builtins-all)
-               "\\) \\(.*\\)$")
-       nil t)
-      (progn
-        (message "Jumping to next ES request")
-        (beginning-of-line)
-        t)
-    nil))
+  (es-mark-request-body)
+  (when (looking-at "{")
+    (forward-sexp))
+  (deactivate-mark)
+  (search-forward "{")
+  (previous-line)
+  (beginning-of-line)
+  (unless (looking-at es--method-url-regexp)
+    (search-forward "{")
+    (backward-char)))
 
-(defun es-run-all-requests ()
-  "Runs all requests, updating the buffer when they complete."
-  (interactive)
-  (beginning-of-buffer)
-  (es-execute-request-if-found)
-  (while (es-goto-next-request)
-    (es-execute-request-if-found)))
+(defun es-execute-request-dwim (prefix)
+  "Executes a request with parameters if found, otherwises
+assumes that the user wants to be prompted for a method/url to
+send the region as a request to/use the predefined vars. Does not
+move the point. If a prefix, `C-u', is given, all the requests in
+the buffer is executed from top to bottom."
+  (interactive "P")
+  (save-excursion
+    (when prefix
+      (beginning-of-buffer)
+      (setq es--query-number 1))
+    (es-mark-request-body)
+    (es--execute-region)
+    (when prefix
+      (while (es-goto-next-request)
+        (setq es--query-number (1+ es--query-number))
+        (es-mark-request-body)
+        (es--execute-region))
+      (setq es--query-number 0))))
 
 (defun es-result-show-response ()
   "Shows the header of the response from the server in the
@@ -502,9 +473,7 @@ available. Returns true if one was found, nil otherwise."
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-p") 'es-goto-previous-request)
     (define-key map (kbd "C-c C-n") 'es-goto-next-request)
-    (define-key map (kbd "C-u C-c") 'es-run-all-requests)
-    (define-key map (kbd "C-c C-c") 'es-execute-request-if-found)
-    (define-key map (kbd "C-c C-e") 'es-execute-region)
+    (define-key map (kbd "C-c C-c") 'es-execute-request-dwim)
     (define-key map (kbd "C-c C-u") 'es-set-endpoint-url)
     (define-key map (kbd "C-c C-m") 'es-set-request-method)
     map)
