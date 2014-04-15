@@ -171,7 +171,7 @@ the user on DELETE requests."
 
 (defun es--fix-url (url)
   (cond ((or (string-prefix-p "_" url)
-             (string-prefix-p "/_" url))
+             (string-prefix-p "/" url))
          (concat es-default-base url))
         ((not (string-prefix-p "http://" url))
          (concat "http://" url))
