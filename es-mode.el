@@ -300,9 +300,9 @@ vars."
          (url-request-data (buffer-substring-no-properties beg end))
          (result-buffer-name (if (zerop es--query-number)
                                  (format "*ES: %s*" (buffer-name))
-                                 (format "*ES: %s [%d]*"
-                                         (buffer-name)
-                                         es--query-number))))
+                               (format "*ES: %s [%d]*"
+                                       (buffer-name)
+                                       es--query-number))))
     (when (es--warn-on-delete-yes-or-no-p)
       (message "Issuing %s against %s" url-request-method url)
       (url-retrieve url 'es-result--handle-response (list result-buffer-name))
@@ -319,17 +319,17 @@ vars."
 the end."
   (interactive)
   (let ((p (point)))
-   (beginning-of-line)
-   (cond ((es--at-current-header-p)
-          (search-forward "{"))
-         ((looking-at "^\\s *$")
-          (forward-line -1)))
-   (ignore-errors
-     (while t
-       (backward-up-list)))
-   (if (looking-at "{")
-       (mark-sexp)
-     (goto-char p))))
+    (beginning-of-line)
+    (cond ((es--at-current-header-p)
+           (search-forward "{"))
+          ((looking-at "^\\s *$")
+           (forward-line -1)))
+    (ignore-errors
+      (while t
+        (backward-up-list)))
+    (if (looking-at "{")
+        (mark-sexp)
+      (goto-char p))))
 
 (defun es-goto-previous-request ()
   "Advance the point to the previous parameter declaration, if
