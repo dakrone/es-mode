@@ -101,7 +101,6 @@ to do that."
           (es-goto-next-request)
           (setq output (concat output "\n"))
           (es-mark-request-body)
-          (es-org-execute-request)
           (setq output
                 (concat output
                         (es-org-execute-request)))))
