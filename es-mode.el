@@ -163,21 +163,8 @@ the user on DELETE requests."
 (defconst es--method-url-regexp
   (concat "^\\("
           (regexp-opt es-http-builtins-all)
-          "\\) \\(.*\\)$"))
-
-
-(defun es--find-params ()
-  "Search backwards to find text like \"POST /_search\",
-  returning a list of method and full URL, prepending
-  `es-default-base' to the URL. Returns `false' if no parameters
-  are found."
-  (save-excursion
-    (if (search-backward-regexp es--method-url-regexp nil t)
-        (let ((method (match-string 1))
-              (uri (match-string 2)))
-          `(,method . ,(es--fix-url uri)))
-      (message "Could not find <method> <url> parameters!")
-      nil)))
+          "\\) \\(.*\\)$")
+  "A regex to get the method and url from a line.")
 
 (defun es-set-endpoint-url (new-url)
   "`new-url' is the url that you want the queries to be sent
@@ -243,6 +230,20 @@ in which case it prompts the user."
         ((not (string-prefix-p "http://" url))
          (concat "http://" url))
         (t url)))
+
+(defun es--find-params ()
+  "Search backwards to find text like \"POST /_search\",
+  returning a list of method and full URL, prepending
+  `es-default-base' to the URL. Returns `false' if no parameters
+  are found."
+  (save-excursion
+    (if (search-backward-regexp es--method-url-regexp nil t)
+        (let ((method (match-string 1))
+              (uri (match-string 2)))
+          `(,method . ,(es--fix-url uri)))
+      (message "Could not find <method> <url> parameters!")
+      nil)))
+
 (defun es-company-backend (command &optional arg &rest ign)
   "A `company-backend' for es-queries and facets."
   (case command
