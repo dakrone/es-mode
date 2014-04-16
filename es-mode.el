@@ -218,7 +218,7 @@ in which case it prompts the user."
          (let ((base (url-generic-parse-url
                       (let ((es-default-url
                              (url-generic-parse-url
-                              es-default-url)))
+                              (or es-endpoint-url es-default-url))))
                         (setf (url-filename es-default-url) url)
                         (setq es-default-url (url-recreate-url es-default-url))
                         (es-get-url)))))
