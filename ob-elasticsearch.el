@@ -76,7 +76,7 @@ Does not move the point."
       (let ((output ""))
         (with-current-buffer (url-retrieve-synchronously url)
           (goto-char (point-min))
-          (when (and (looking-at "^.* 20[0-9] OK$")
+          (when (and (looking-at "^HTTP/... 20[0-9] .*$")
                      (not (string= "yes" keep-header)))
             (search-forward "\n\n")
             (delete-region (point-min) (point)))

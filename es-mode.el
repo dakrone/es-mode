@@ -266,7 +266,7 @@ query. "
         (kill-buffer http-results-buffer)
         (insert "\n")
         (goto-char (point-min))
-        (when (string-match "^.* 20[0-9] OK$" (thing-at-point 'line))
+        (when (string-match "^HTTP/... 20[0-9] .*$" (thing-at-point 'line))
           (search-forward "\n\n")
           (setq es-result-response
                 (buffer-substring (point-min) (point)))
