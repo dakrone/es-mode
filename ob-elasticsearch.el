@@ -6,7 +6,7 @@
 ;; Author: Bjarte Johansen
 ;; Keywords: literate programming, reproducible research
 ;; Homepage: http://www.github.com/dakrone/es-mode
-;; Version: 0.0.1
+;; Version: 0.1.0
 
 ;;; License:
 

@@ -25,9 +25,11 @@ No url or method, included in body params
 GET /_cluster/health?pretty
 {}
 
-GET /
+DELETE /test/doc/1
 {}
 
-GET /_cluster/health
-{}
+POST /test/doc/1/_create
+{
+  "body": "foo"
+}
 #+END_SRC
