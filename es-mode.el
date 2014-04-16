@@ -165,18 +165,6 @@ the user on DELETE requests."
           (regexp-opt es-http-builtins-all)
           "\\) \\(.*\\)$"))
 
-(defun es--fix-url (url)
-  (cond ((or (string-prefix-p "_" url)
-             (string-prefix-p "/" url))
-         (let ((base (url-generic-parse-url (es-get-url))))
-           (setf (url-filename base)
-                 (if (string-prefix-p "/" url)
-                     url
-                   (concat "/" url)))
-           (url-recreate-url base)))
-        ((not (string-prefix-p "http://" url))
-         (concat "http://" url))
-        (t url)))
 
 (defun es--find-params ()
   "Search backwards to find text like \"POST /_search\",
@@ -236,6 +224,25 @@ in which case it prompts the user."
   (or (and (not es-prompt-request-method) es-request-method)
       (command-execute 'es-set-request-method)))
 
+(defun es--fix-url (url)
+  "Transforms the URL so that we can use it to send a request."
+  (cond ((or (string-prefix-p "_" url)
+             (string-prefix-p "/" url))
+         (let ((base (url-generic-parse-url
+                      (let ((es-default-url
+                             (url-generic-parse-url
+                              es-default-url)))
+                        (setf (url-filename es-default-url) url)
+                        (setq es-default-url (url-recreate-url es-default-url))
+                        (es-get-url)))))
+           (setf (url-filename base)
+                 (if (string-prefix-p "/" url)
+                     url
+                   (concat "/" url)))
+           (url-recreate-url base)))
+        ((not (string-prefix-p "http://" url))
+         (concat "http://" url))
+        (t url)))
 (defun es-company-backend (command &optional arg &rest ign)
   "A `company-backend' for es-queries and facets."
   (case command
