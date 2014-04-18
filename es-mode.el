@@ -45,6 +45,7 @@
 (require 'js)
 (require 'url)
 (require 'url-util)
+(require 'url-parse)
 
 (defgroup es nil
   "Major mode for editing Elasticsearch queries."
@@ -57,11 +58,6 @@
 
 (defcustom es-default-url "http://localhost:9200/_search?pretty=true"
   "The default URL of the Elasticsearch endpoint."
-  :group 'es
-  :type 'string)
-
-(defcustom es-default-base "http://localhost:9200/"
-  "Default URL base to be added to Sense-like requests"
   :group 'es
   :type 'string)
 
@@ -167,28 +163,8 @@ the user on DELETE requests."
 (defconst es--method-url-regexp
   (concat "^\\("
           (regexp-opt es-http-builtins-all)
-          "\\) \\(.*\\)$"))
-
-(defun es--fix-url (url)
-  (cond ((or (string-prefix-p "_" url)
-             (string-prefix-p "/" url))
-         (concat es-default-base url))
-        ((not (string-prefix-p "http://" url))
-         (concat "http://" url))
-        (t url)))
-
-(defun es--find-params ()
-  "Search backwards to find text like \"POST /_search\",
-  returning a list of method and full URL, prepending
-  `es-default-base' to the URL. Returns `false' if no parameters
-  are found."
-  (save-excursion
-    (if (search-backward-regexp es--method-url-regexp nil t)
-        (let ((method (match-string 1))
-              (uri (match-string 2)))
-          `(,method . ,(es--fix-url uri)))
-      (message "Could not find <method> <url> parameters!")
-      nil)))
+          "\\) \\(.*\\)$")
+  "A regex to get the method and url from a line.")
 
 (defun es-set-endpoint-url (new-url)
   "`new-url' is the url that you want the queries to be sent
@@ -235,6 +211,39 @@ in which case it prompts the user."
   (or (and (not es-prompt-request-method) es-request-method)
       (command-execute 'es-set-request-method)))
 
+(defun es--fix-url (url)
+  "Transforms the URL so that we can use it to send a request."
+  (cond ((or (string-prefix-p "_" url)
+             (string-prefix-p "/" url))
+         (let ((base (url-generic-parse-url
+                      (let ((es-default-url
+                             (url-generic-parse-url
+                              (or es-endpoint-url es-default-url))))
+                        (setf (url-filename es-default-url) url)
+                        (setq es-default-url (url-recreate-url es-default-url))
+                        (es-get-url)))))
+           (setf (url-filename base)
+                 (if (string-prefix-p "/" url)
+                     url
+                   (concat "/" url)))
+           (url-recreate-url base)))
+        ((not (string-prefix-p "http://" url))
+         (concat "http://" url))
+        (t url)))
+
+(defun es--find-params ()
+  "Search backwards to find text like \"POST /_search\",
+  returning a list of method and full URL, prepending
+  `es-default-base' to the URL. Returns `false' if no parameters
+  are found."
+  (save-excursion
+    (if (search-backward-regexp es--method-url-regexp nil t)
+        (let ((method (match-string 1))
+              (uri (match-string 2)))
+          `(,method . ,(es--fix-url uri)))
+      (message "Could not find <method> <url> parameters!")
+      nil)))
+
 (defun es-company-backend (command &optional arg &rest ign)
   "A `company-backend' for es-queries and facets."
   (case command
@@ -265,7 +274,7 @@ query. "
         (kill-buffer http-results-buffer)
         (insert "\n")
         (goto-char (point-min))
-        (when (string-match "^.* 20[0-9] OK$" (thing-at-point 'line))
+        (when (string-match "^HTTP/... 20[0-9] .*$" (thing-at-point 'line))
           (search-forward "\n\n")
           (setq es-result-response
                 (buffer-substring (point-min) (point)))
