@@ -73,8 +73,11 @@
 (defvar es-endpoint-url-history (list es-default-url)
   "The history over used URLs.")
 
-(defvar es-json-result-hook nil
-  "Hook called in the es-results-buffer if the response is a JSON response.")
+(defvar es-response-functions nil
+  "Abnormal hook called with the Elasticsearch
+  response. Functions in this list take 3 arguments: the response
+  status (as an integer), the Content-Type header (i.e,
+  text/html), and the result buffer.")
 
 (defcustom es-default-request-method "POST"
   "The default request method used for queries."
@@ -261,11 +264,15 @@ in which case it prompts the user."
               es-parent-types es-keywords)))))
 
 (defun es-result--handle-response (status &optional results-buffer-name)
-  "Handles the response from the server returns after sending a
-query. "
-  (let ((http-results-buffer (current-buffer)))
+  "Handles the response from the server returns after sending a query."
+  (let ((http-results-buffer (current-buffer))
+        (http-status-code url-http-response-status)
+        (http-content-type url-http-content-type)
+        (http-content-length url-http-content-length))
     (set-buffer
      (get-buffer-create results-buffer-name))
+    (message "Response: Status: %S Content-Type: %S (%s bytes)"
+             http-status-code http-content-type http-content-length)
     (let ((buffer-read-only nil))
       (delete-region (point-min) (point-max))
       (if (equal 'connection-failed (cadadr status))
@@ -277,16 +284,14 @@ query. "
         (kill-buffer http-results-buffer)
         (insert "\n")
         (goto-char (point-min))
-        (when (string-match "^HTTP/... 20[0-9] .*$" (thing-at-point 'line))
+        (when (numberp http-status-code)
           (search-forward "\n\n")
-          (setq es-result-response
-                (buffer-substring (point-min) (point)))
-          (delete-region (point-min) (point)))
-        (when (string-match "^Content-type: \\(.*\\)$" es-result-response)
-          (let ((content-type (match-string 1 es-result-response)))
-            (cond ((string-lessp "application/json" content-type) (run-hooks 'es-json-result-hook))
-                  ;; Could handle other types here...
-                  )))
+          (setq es-result-response (buffer-substring (point-min) (point)))
+          (delete-region (point-min) (point))
+          (run-hook-with-args 'es-response-functions
+                              http-status-code
+                              http-content-type
+                              (current-buffer)))
         (setq mode-name "ES[finished]")))))
 
 (defun es--warn-on-delete-yes-or-no-p ()
