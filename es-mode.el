@@ -73,8 +73,14 @@
 (defvar es-endpoint-url-history (list es-default-url)
   "The history over used URLs.")
 
-(defvar es-response-functions nil
-  "Abnormal hook called with the Elasticsearch
+(defvar es-response-success-functions nil
+  "Abnormal hook called with the Elasticsearch 2xx
+  response. Functions in this list take 3 arguments: the response
+  status (as an integer), the Content-Type header (i.e,
+  text/html), and the result buffer.")
+
+(defvar es-response-failure-functions nil
+  "Abnormal hook called with the Elasticsearch non-2xx
   response. Functions in this list take 3 arguments: the response
   status (as an integer), the Content-Type header (i.e,
   text/html), and the result buffer.")
@@ -275,7 +281,8 @@ in which case it prompts the user."
              http-status-code http-content-type http-content-length)
     (let ((buffer-read-only nil))
       (delete-region (point-min) (point-max))
-      (if (equal 'connection-failed (cadadr status))
+      (if (or (equal 'connection-failed (cadadr status))
+              (not (numberp http-status-code)))
           (progn
             (insert "ERROR: Could not connect to server.")
             (setq mode-name (format "ES[failed]")))
@@ -284,16 +291,20 @@ in which case it prompts the user."
         (kill-buffer http-results-buffer)
         (insert "\n")
         (goto-char (point-min))
-        (when (and (numberp http-status-code)
-                   (>= http-status-code 200)
-                   (<= http-status-code 299))
-          (search-forward "\n\n")
-          (setq es-result-response (buffer-substring (point-min) (point)))
-          (delete-region (point-min) (point))
-          (run-hook-with-args 'es-response-functions
+        (search-forward "\n\n")
+        (setq es-result-response (buffer-substring (point-min) (point)))
+        (delete-region (point-min) (point))
+        (cond
+         ((and (>= http-status-code 200) (<= http-status-code 299))
+          (run-hook-with-args 'es-response-success-functions
                               http-status-code
                               http-content-type
                               (current-buffer)))
+         (t
+          (run-hook-with-args 'es-response-failure-functions
+                              http-status-code
+                              http-content-type
+                              (current-buffer))))
         (setq mode-name "ES[finished]")))))
 
 (defun es--warn-on-delete-yes-or-no-p ()
