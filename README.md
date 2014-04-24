@@ -45,6 +45,8 @@ automatically load..
 - Sending the queries as a http-request to Elasticsearch endpoints.
 - navigate via goto-(next|previous)-request with `C-c C-n` and `C-c C-p` (when
   using parameters)
+- hooks for responses, see `es-response-success-functions` and
+  `es-response-failure-functions`
 
 ### Example
 
