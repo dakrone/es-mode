@@ -79,9 +79,10 @@ Without any parameters, you can specify a request:
 }
 ```
 
-With the request region highlighted, hit `C-c C-c` to execute it. The first time
-you do this you will be prompted for the URL and HTTP method. You can also set
-the URL with `C-c C-u` and the method with `C-c C-m`.
+With the request region highlighted or inside the query structure, hit `C-c C-c`
+to execute it. The first time you do this you will be prompted for the URL and
+HTTP method. You can also set the URL with `C-c C-u` and the method with `C-c
+C-m`.
 
 #### Screenshot
 
@@ -133,6 +134,9 @@ to send a query. If they are not present org-mode will use
 Tangling these blocks will produce `<filename>.es`, if you specify the filename
 with `:tangle foo.sh`, es-mode will instead create a curl request for the body
 of the request.
+
+You can also add the `:header yes` option to the source block to get back the
+HTTP headers for the request.
 
 ### Feedback
 
