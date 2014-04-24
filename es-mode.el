@@ -46,6 +46,7 @@
 (require 'url)
 (require 'url-util)
 (require 'url-parse)
+(require 'cl-lib)
 
 (defgroup es nil
   "Major mode for editing Elasticsearch queries."
@@ -281,7 +282,7 @@ in which case it prompts the user."
              http-status-code http-content-type http-content-length)
     (let ((buffer-read-only nil))
       (delete-region (point-min) (point-max))
-      (if (or (equal 'connection-failed (cadadr status))
+      (if (or (equal 'connection-failed (cl-cadadr status))
               (not (numberp http-status-code)))
           (progn
             (insert "ERROR: Could not connect to server.")
