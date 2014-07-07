@@ -170,7 +170,8 @@ the user on DELETE requests."
 (defvar es-facet-types
   '("date_histogram" "geo_distance" "histogram" "statistical" "terms_stats"
     "min" "max" "sum" "avg" "stats" "extended_stats" "value_count" "missing"
-    "geohash_grid" "script" "percentiles")
+    "geohash_grid" "script" "percentile" "percentiles" "top_hits"
+    "significant_terms" "ip_range" "global")
   "Leaf-type facets")
 
 (defconst es--method-url-regexp
