@@ -135,7 +135,7 @@ the user on DELETE requests."
   "Top-level query and filter containers")
 
 (defvar es-keywords
-  '("fields" "from" "size" "highlight")
+  '("fields" "from" "size" "highlight" "_name" "_cache" "_cache_key")
   "Top-level fields supported by all queries")
 
 (defvar es-warnings
