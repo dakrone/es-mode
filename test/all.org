@@ -33,3 +33,10 @@ POST /test/doc/1/_create
   "body": "foo"
 }
 #+END_SRC
+
+Passing responses though the =jq= tool
+
+#+BEGIN_SRC es :jq .version.number, .name
+GET /
+{}
+#+END_SRC
