@@ -82,19 +82,20 @@ Does not move the point."
       (let ((output ""))
         (with-current-buffer (url-retrieve-synchronously url)
           (goto-char (point-min))
-          ;; If the :jq header exists, need to remove headers
-          (when (or jq-header
-                    (and (looking-at "^HTTP/... 20[0-9] .*$")
-                         (not (string= "yes" keep-header))))
-            (search-forward "\n\n")
-            (delete-region (point-min) (point)))
-          (when jq-header
-            (shell-command-on-region
-             (point-min)
-             (point-max)
-             (concat es-jq-path " '" jq-header "'")
-             (current-buffer)
-             t))
+          ;; Only attempt to remove headers or pass though `jq' if the response
+          ;; was successful
+          (when (looking-at "^HTTP/... 20[0-9] .*$")
+            ;; If the :jq header exists, need to remove headers
+            (when (or jq-header (not (string= "yes" keep-header)))
+              (search-forward "\n\n")
+              (delete-region (point-min) (point)))
+            (when jq-header
+              (shell-command-on-region
+               (point-min)
+               (point-max)
+               (concat es-jq-path " '" jq-header "'")
+               (current-buffer)
+               t)))
           (setq output (buffer-string))
           (kill-buffer))
         output))))

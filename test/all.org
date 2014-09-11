@@ -47,3 +47,10 @@ Passing responses though the =jq= tool
 GET /
 {}
 #+END_SRC
+
+=jq= parameter should be ignored if the response was not successful
+
+#+BEGIN_SRC es :jq .status
+GET /badURL
+{}
+#+END_SRC
