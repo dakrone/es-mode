@@ -5,7 +5,7 @@
 
 ;; Author: Lee Hinman <lee@writequit.org>
 ;; URL: http://www.github.com/dakrone/es-mode
-;; Version: 3.0.0
+;; Version: 3.1.0
 ;; Keywords: elasticsearch
 
 ;; This file is not part of GNU Emacs.
