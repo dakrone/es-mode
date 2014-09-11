@@ -34,6 +34,13 @@ POST /test/doc/1/_create
 }
 #+END_SRC
 
+Include headers in the response
+
+#+BEGIN_SRC es :header yes
+GET /
+{}
+#+END_SRC
+
 Passing responses though the =jq= tool
 
 #+BEGIN_SRC es :jq .version.number, .name

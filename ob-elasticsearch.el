@@ -83,12 +83,12 @@ Does not move the point."
         (with-current-buffer (url-retrieve-synchronously url)
           (goto-char (point-min))
           ;; If the :jq header exists, need to remove headers
-          (when (or (not (eq jq-header nil))
+          (when (or jq-header
                     (and (looking-at "^HTTP/... 20[0-9] .*$")
                          (not (string= "yes" keep-header))))
             (search-forward "\n\n")
             (delete-region (point-min) (point)))
-          (when (not (eq jq-header nil))
+          (when jq-header
             (shell-command-on-region
              (point-min)
              (point-max)
