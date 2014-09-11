@@ -47,6 +47,8 @@ automatically load..
   using parameters)
 - hooks for responses, see `es-response-success-functions` and
   `es-response-failure-functions`
+- pass the resulting JSON through [jq](https://stedolan.github.io/jq/) to return
+  only the values you want in org-mode
 
 ### Example
 
@@ -139,6 +141,60 @@ of the request.
 
 You can also add the `:header yes` option to the source block to get back the
 HTTP headers for the request.
+
+#### Passing JSON through [jq](https://stedolan.github.io/jq/)
+
+In org-mode you can also reduce the size of results by passing them through the
+jq command-line tool. For example, compare the output of these two different org
+blocks:
+
+```
+#+BEGIN_SRC es
+GET /
+{}
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+{
+  "status" : 200,
+  "name" : "Everyman",
+  "version" : {
+    "number" : "1.3.2",
+    "build_hash" : "dee175dbe2f254f3f26992f5d7591939aaefd12f",
+    "build_timestamp" : "2014-08-13T14:29:30Z",
+    "build_snapshot" : false,
+    "lucene_version" : "4.9"
+  },
+  "tagline" : "You Know, for Search"
+}
+#+end_example
+```
+
+And the same thing, but passed through the `jq` tool, extracting the "name" and
+"version.number" fields:
+
+```
+#+BEGIN_SRC es :jq .name, .version.number
+GET /
+{}
+#+END_SRC
+
+#+RESULTS:
+: "Everyman"
+: "1.3.2"
+```
+
+You can use this to return only a certain hit, or the score of a hit, etc,
+easily, so you can format the output as desired. See the
+[full jq manual](https://stedolan.github.io/jq/manual/) for how to use jq.
+
+es-mode uses `jq` in the `PATH`, however, if you want to specify an absolute
+path you can customize the `es-jq-path` var as you like.
+
+When using the :jq header, you cannot use `:headers yes` (since headers can't be
+passed to the jq tool) and jq will only be run if the response is an HTTP
+20[0-9].
 
 ### Feedback
 
