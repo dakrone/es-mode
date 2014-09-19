@@ -72,7 +72,7 @@ the request, opening a response buffer. The base-url can be configured by
 customizing the `es-default-base` var.
 
 You also don't have to provide the leading "/", similar to Sense (I personally
-think it looks better though), like this:
+think the leading "/" looks better though), like this:
 
 ```json
 POST myindex/_search?pretty
