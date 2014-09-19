@@ -227,22 +227,23 @@ in which case it prompts the user."
 
 (defun es--fix-url (url)
   "Transforms the URL so that we can use it to send a request."
-  (cond ((or (string-prefix-p "_" url)
-             (string-prefix-p "/" url))
-         (let ((base (url-generic-parse-url
-                      (let ((es-default-url
-                             (url-generic-parse-url
-                              (or es-endpoint-url es-default-url))))
-                        (setf (url-filename es-default-url) url)
-                        (setq es-default-url (url-recreate-url es-default-url))
-                        (es-get-url)))))
-           (setf (url-filename base)
-                 (if (string-prefix-p "/" url)
-                     url
-                   (concat "/" url)))
-           (url-recreate-url base)))
-        ((not (string-prefix-p "http://" url))
-         (concat "http://" url))
+  (cond ((not (string-prefix-p "http://" url))
+         (let ((url (if (string-prefix-p "/" url)
+                        url
+                      (concat "/" url))))
+           (let ((base (url-generic-parse-url
+                        (let ((es-default-url
+                               (url-generic-parse-url
+                                (or es-endpoint-url es-default-url))))
+                          (setf (url-filename es-default-url) url)
+                          (setq es-default-url
+                                (url-recreate-url es-default-url))
+                          (es-get-url)))))
+             (setf (url-filename base)
+                   (if (string-prefix-p "/" url)
+                       url
+                     (concat "/" url)))
+             (url-recreate-url base))))
         (t url)))
 
 (defun es--find-params ()
@@ -483,7 +484,7 @@ the buffer is executed from top to bottom."
        (2 font-lock-variable-name-face t))
       (,(concat "^\\("
                 (regexp-opt es-http-builtins-all)
-                "\\) \\(/[^[:space:]\n]*\\)")
+                "\\) \\([^[:space:]\n]*\\)")
        (1 font-lock-builtin-face t)
        (2 font-lock-variable-name-face t))
       ;; keywords for fields usually specified

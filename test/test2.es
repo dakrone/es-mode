@@ -59,3 +59,9 @@ POST /_search?pretty
 
 DELETE /index
 {}
+
+GET test/doc/1
+{}
+
+GET _cat/nodes?v
+{}

@@ -71,6 +71,18 @@ Hitting `C-c C-c` anywhere on the parameter or body of the request will execute
 the request, opening a response buffer. The base-url can be configured by
 customizing the `es-default-base` var.
 
+You also don't have to provide the leading "/", similar to Sense (I personally
+think it looks better though), like this:
+
+```json
+POST myindex/_search?pretty
+{
+  "query": {
+    "match_all": {}
+  }
+}
+```
+
 #### Without parameters
 
 Without any parameters, you can specify a request:
