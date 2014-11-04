@@ -422,11 +422,11 @@ in which case it prompts the user."
 (defun es-old-company-backend (command &optional arg &rest ign)
   "The old `company-backend' for es-queries and facets."
   (case command
-    ('prefix (let ((sym (company-grab-symbol)))
-               (if (string-match "\"\\(.*\\)\"?" sym)
-                   (match-string 1 sym)
-                 sym)))
-    ('candidates
+    (prefix (let ((sym (company-grab-symbol)))
+              (if (string-match "\"\\(.*\\)\"?" sym)
+                  (match-string 1 sym)
+                sym)))
+    (candidates
      (all-completions
       arg
       (append es-top-level-fields es-query-types es-facet-types
@@ -595,7 +595,7 @@ the buffer is executed from top to bottom."
   (interactive "P")
   (save-excursion
     (when prefix
-      (beginning-of-buffer)
+      (goto-char (point-min))
       (setq es--query-number 1))
     (es-mark-request-body)
     (es--execute-region)
