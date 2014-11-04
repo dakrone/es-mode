@@ -106,6 +106,10 @@ See `test.es`, `test2.es`, and `all.org`, here's a screenshot from my theme:
 
 ![picture of es-mode](http://writequit.org/files/es-mode.png)
 
+And here's an example of the completion of queries/filters:
+
+![picture of es-mode completion](http://writequit.org/files/es-mode-completion.png)
+
 ### Org-babel support
 
 One of the main reasons I started this was better highlighting and indention for
