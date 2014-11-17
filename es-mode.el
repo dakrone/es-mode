@@ -436,7 +436,6 @@ in which case it prompts the user."
   "A `company-backend' for es-queries and facets. Displays metadata about the
  completion, if available."
   (interactive (list 'interactive))
-  (message (concat "trying: " arg))
   (cl-case command
     (prefix (let ((sym (company-grab-symbol)))
               (if (string-match "\"\\(.*\\)\"?" sym)
