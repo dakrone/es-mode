@@ -45,6 +45,7 @@
 (require 'cl-lib)
 (require 'js)
 (require 'url)
+(require 'url-handlers)
 (require 'url-parse)
 (require 'url-util)
 
@@ -466,13 +467,7 @@ in which case it prompts the user."
             (insert "ERROR: Could not connect to server.")
             (setq mode-name (format "ES[failed]")))
         (es-result-mode)
-
-        ;; Put the HTTP response in the buffer (with a final newline).
-        (insert-buffer-substring http-results-buffer)
-        (kill-buffer http-results-buffer)
-        (insert "\n")
-
-        ;; Run hooks with the full response data.
+        (url-insert http-results-buffer)
         (cond
          ((and (>= http-status-code 200) (<= http-status-code 299))
           (run-hook-with-args 'es-response-success-functions
@@ -484,15 +479,6 @@ in which case it prompts the user."
                               http-status-code
                               http-content-type
                               (current-buffer))))
-
-        ;; Delete the HTTP headers for successful requests. Leave them
-        ;; there for diagnosis on non-2xx responses.
-        (when (and (>= http-status-code 200) (<= http-status-code 299))
-          (goto-char (point-min))
-          (search-forward "\n\n")
-          (setq es-result-response (buffer-substring (point-min) (point)))
-          (delete-region (point-min) (point)))
-
         (setq mode-name "ES[finished]")))))
 
 (defun es--warn-on-delete-yes-or-no-p ()
