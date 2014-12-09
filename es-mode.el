@@ -515,12 +515,13 @@ vars."
   (let* ((beg (if (region-active-p) (region-beginning) (point-min)))
          (end (if (region-active-p) (region-end) (point-max)))
          (url-request-extra-headers
-          '(("Content-Type" . "application/x-www-form-urlencoded")))
+          '(("Content-Type" . "application/x-www-form-urlencoded; charset=UTF-8")))
          (params (or (es--find-params)
                      `(,(es-get-request-method) . ,(es-get-url))))
          (url (cdr params))
          (url-request-method (car params))
-         (url-request-data (buffer-substring-no-properties beg end))
+         (url-request-data (encode-coding-string
+                            (buffer-substring-no-properties beg end) 'utf-8))
          (result-buffer-name (if (zerop es--query-number)
                                  (format "*ES: %s*" (buffer-name))
                                (format "*ES: %s [%d]*"
