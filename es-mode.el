@@ -42,11 +42,11 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'js)
 (require 'url)
-(require 'url-util)
 (require 'url-parse)
-(require 'cl-lib)
+(require 'url-util)
 
 (defgroup es nil
   "Major mode for editing Elasticsearch queries."
@@ -320,15 +320,15 @@ the user on DELETE requests."
   (get-text-property 0 :summary s))
 
 (defvar es-facet-types
-  (remove-if-not (lambda (c) (string= "agg" (es-extract-type-raw c))) es-vars)
+  (cl-remove-if-not (lambda (c) (string= "agg" (es-extract-type-raw c))) es-vars)
   "Facets/Aggregations")
 
 (defvar es-parent-types
-  (remove-if-not (lambda (c) (string= "parent" (es-extract-type-raw c))) es-vars)
+  (cl-remove-if-not (lambda (c) (string= "parent" (es-extract-type-raw c))) es-vars)
   "Compound queries that always contain additional queries or filters")
 
 (defvar es-query-types
-  (remove-if-not (lambda (c) (or (string= "filter" (es-extract-type-raw c))
+  (cl-remove-if-not (lambda (c) (or (string= "filter" (es-extract-type-raw c))
                             (string= "query" (es-extract-type-raw c))
                             (string= "both" (es-extract-type-raw c))))
                  es-vars)
@@ -442,7 +442,7 @@ in which case it prompts the user."
                   (match-string 1 sym)
                 sym)))
     (candidates
-     (remove-if-not
+     (cl-remove-if-not
       (lambda (c) (string-prefix-p arg c))
       es-vars))
     (annotation (es-extract-type arg))
