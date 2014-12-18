@@ -6,7 +6,7 @@
 ;; Author: Bjarte Johansen
 ;; Keywords: literate programming, reproducible research
 ;; Homepage: http://www.github.com/dakrone/es-mode
-;; Version: 0.2.0
+;; Version: 1.0.0
 
 ;;; License:
 
@@ -41,7 +41,6 @@
 (defvar org-babel-default-header-args:es
   `((:url    . ,es-default-url)
     (:method . ,es-default-request-method)
-    (:header . "no")
     (:jq     . nil))
   "Default arguments for evaluating an elasticsearch query
 block.")
@@ -65,7 +64,7 @@ just a normal .es file that contains the body of the block.."
                 url
                 body)))))
 
-(defun es-org-execute-request (keep-header jq-header)
+(defun es-org-execute-request (jq-header)
   "Executes a request with parameters that are above the request.
 Does not move the point."
   (interactive)
@@ -82,26 +81,25 @@ Does not move the point."
                             'utf-8)))
     (when (es--warn-on-delete-yes-or-no-p)
       (message "Issuing %s against %s" url-request-method url)
-      (let ((output ""))
-        (with-current-buffer (url-retrieve-synchronously url)
-          (goto-char (point-min))
-          ;; Only attempt to remove headers or pass though `jq' if the response
-          ;; was successful
-          (when (looking-at "^HTTP/... 20[0-9] .*$")
-            ;; If the :jq header exists, need to remove headers
-            (when (or jq-header (not (string= "yes" keep-header)))
-              (search-forward "\n\n")
-              (delete-region (point-min) (point)))
-            (when jq-header
-              (shell-command-on-region
-               (point-min)
-               (point-max)
-               (concat es-jq-path " '" jq-header "'")
-               (current-buffer)
-               t)))
-          (setq output (buffer-string))
-          (kill-buffer))
-        output))))
+      (let* ((buffer (url-retrieve-synchronously url)))
+        (unless (zerop (buffer-size buffer))
+          (prog1
+              (with-temp-buffer
+                (if (not (<= 200
+                             (with-current-buffer buffer
+                               (url-http-parse-response))
+                             299))
+                    (insert-buffer buffer)
+                  (url-insert buffer)
+                  (when jq-header
+                    (shell-command-on-region
+                     (point-min)
+                     (point-max)
+                     (concat es-jq-path " '" jq-header "'")
+                     (current-buffer)
+                     t)))
+                (buffer-string))
+            (kill-buffer buffer)))))))
 
 (defun org-babel-execute:es (body params)
   "Execute a block containing an Elasticsearch query with
@@ -117,19 +115,15 @@ to do that."
     (beginning-of-buffer)
     (es-mark-request-body)
     (let ((output (when mark-active
-                    (es-org-execute-request
-                     (cdr (assoc :header params))
-                     (cdr (assoc :jq params))))))
+                    (es-org-execute-request (cdr (assoc :jq params))))))
       (ignore-errors
         (while t
-          (setq output (concat output "\n"))
           (es-goto-next-request)
           (es-mark-request-body)
           (setq output
                 (concat output
-                        (es-org-execute-request
-                         (cdr (assoc :header params))
-                         (cdr (assoc :jq params)))))))
+                        "\n"
+                        (es-org-execute-request (cdr (assoc :jq params)))))))
       output)))
 
 (provide 'ob-elasticsearch)
