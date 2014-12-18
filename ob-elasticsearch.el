@@ -74,9 +74,12 @@ Does not move the point."
          (url-request-method (car params))
          (url (cdr params))
          (url-request-extra-headers
-          '(("Content-Type" . "application/x-www-form-urlencoded")))
-         (url-request-data (buffer-substring (region-beginning)
-                                             (region-end))))
+          '(("Content-Type" .
+             "application/x-www-form-urlencoded; charset=UTF-8")))
+         (url-request-data (encode-coding-string
+                            (buffer-substring (region-beginning)
+                                              (region-end))
+                            'utf-8)))
     (when (es--warn-on-delete-yes-or-no-p)
       (message "Issuing %s against %s" url-request-method url)
       (let ((output ""))
