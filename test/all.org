@@ -36,7 +36,7 @@ POST /test/doc/1/_create
 
 Include headers in the response
 
-#+BEGIN_SRC es :header yes
+#+BEGIN_SRC es
 GET /
 {}
 #+END_SRC
