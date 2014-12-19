@@ -155,9 +155,6 @@ Tangling these blocks will produce `<filename>.es`, if you specify the filename
 with `:tangle foo.sh`, es-mode will instead create a curl request for the body
 of the request.
 
-You can also add the `:header yes` option to the source block to get back the
-HTTP headers for the request.
-
 #### Passing JSON through [jq](https://stedolan.github.io/jq/)
 
 In org-mode you can also reduce the size of results by passing them through the
@@ -208,9 +205,7 @@ easily, so you can format the output as desired. See the
 es-mode uses `jq` in the `PATH`, however, if you want to specify an absolute
 path you can customize the `es-jq-path` var as you like.
 
-When using the :jq header, you cannot use `:headers yes` (since headers can't be
-passed to the jq tool) and jq will only be run if the response is an HTTP
-20[0-9].
+jq will only be run if the response is an HTTP 20[0-9].
 
 ### Feedback
 
