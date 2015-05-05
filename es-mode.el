@@ -438,10 +438,12 @@ in which case it prompts the user."
  completion, if available."
   (interactive (list 'interactive))
   (cl-case command
-    (prefix (let ((sym (company-grab-symbol)))
-              (if (string-match "\"\\(.*\\)\"?" sym)
-                  (match-string 1 sym)
-                sym)))
+    (interactive (company-begin-backend 'es-company-backend))
+    (prefix (and (derived-mode-p 'es-mode)
+                 (let ((sym (company-grab-symbol)))
+                   (if (string-match "\"\\(.*\\)\"?" sym)
+                       (match-string 1 sym)
+                     sym))))
     (candidates
      (cl-remove-if-not
       (lambda (c) (string-prefix-p arg c))
