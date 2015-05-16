@@ -361,8 +361,10 @@ the user on DELETE requests."
 has not been set, in which case it prompts the user."
   (let ((url (or (and (not es-prompt-url) es-endpoint-url)
                  (command-execute 'es-set-endpoint-url))))
-    (if (not (string-prefix-p "http://" url t))
-        (concat "http://" url)
+
+    (if (and (not (string-prefix-p "http://" url t))
+	     (not (string-prefix-p "https://" url t)))
+	(concat "http://" url)
       url)))
 
 (defun es-set-request-method (new-request-method)
