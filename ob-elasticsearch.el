@@ -95,7 +95,7 @@ Does not move the point."
                     (shell-command-on-region
                      (point-min)
                      (point-max)
-                     (format "%s '%s'" es-jq-path jq-header)
+                     (format "%s %s" es-jq-path (shell-quote-argument jq-header))
                      (current-buffer)
                      t)))
                 (buffer-string))
