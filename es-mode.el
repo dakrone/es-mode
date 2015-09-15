@@ -305,7 +305,38 @@ the user on DELETE requests."
     #("histogram" 0 1
       (:type "agg" :summary "Aggregation of documents within numeric slices"))
     #("date_histogram" 0 1
-      (:type "agg" :summary "Aggregation of documents within date slices")))
+      (:type "agg" :summary "Aggregation of documents within date slices"))
+    #("filters" 0 1
+      (:type "agg" :summary "Aggregation bucketing documents into buckets defined by filters"))
+
+    ;;; Pipeline aggregations
+    #("avg_bucket" 0 1
+      (:type "pipeline agg" :summary "Calculates the (mean) average value of a specified metric in a sibling aggregation"))
+    #("derivative" 0 1
+      (:type "pipeline agg" :summary "Calculates the derivative of a specified metric in a parent histogram (or date_histogram) aggregation"))
+    #("max_bucket" 0 1
+      (:type "pipeline agg" :summary "Identifies the bucket(s) with the maximum value of a specified metric in a sibling aggregation"))
+    #("min_bucket" 0 1
+      (:type "pipeline agg" :summary "Identifies the bucket(s) with the minimum value of a specified metric in a sibling aggregation"))
+    #("sum_bucket" 0 1
+      (:type "pipeline agg" :summary "Calculates the sum across all bucket of a specified metric in a sibling aggregation"))
+    #("stats_bucket" 0 1
+      (:type "pipeline agg" :summary "Calculates a variety of stats across all bucket of a specified metric in a sibling aggregation"))
+    #("extended_stats_bucket" 0 1
+      (:type "pipeline agg" :summary "Calculates a variety of stats (more than regular stats) across all bucket of a specified metric in a sibling aggregation"))
+    #("percentiles_bucket" 0 1
+      (:type "pipeline agg" :summary "Calculates percentiles across all buckets of a specified metric in a sibling aggregation"))
+    #("moving_avg" 0 1
+      (:type "pipeline agg" :summary "Given an ordered series of data, will slide a window across the data and emit the average value of that window"))
+    #("cumulative_sum" 0 1
+      (:type "pipeline agg" :summary "Calculates the cumulative sum of a specified metric in a parent histogram (or date_histogram) aggregation"))
+    #("bucket_script" 0 1
+      (:type "pipeline agg" :summary "Executes a script which can perform per bucket computations on specified metrics in the parent aggregation"))
+    #("bucket_selector" 0 1
+      (:type "pipeline agg" :summary "Executes a script which determines whether the current bucket will be retained in the parent multi-bucket aggregation"))
+    #("serial_diff" 0 1
+      (:type "pipeline agg" :summary "A technique where values in a time series are subtracted from itself at different time lags or periods"))
+    )
   "Vars used for query and filter completion")
 
 (defun es-extract-type-raw (s)
