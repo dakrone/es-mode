@@ -53,4 +53,5 @@
 
 (defvar test-resp "{\"took\":1,\"timed_out\":false,\"_shards\":{\"total\":5,\"successful\":5,\"failed\":0},\"hits\":{\"total\":10,\"max_score\":0.0,\"hits\":[]},\"aggregations\":{\"prices\":{\"buckets\":[{\"key\":0,\"doc_count\":2},{\"key\":50,\"doc_count\":4},{\"key\":100,\"doc_count\":0},{\"key\":150,\"doc_count\":3}]}}}\n")
 
+(provide 'es-parse)
 ;;; es-parse.el ends here
