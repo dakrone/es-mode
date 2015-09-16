@@ -1,0 +1,85 @@
+#+TITLE:   Histogram tests
+#+AUTHOR:  Lee Hinman
+#+LANGUAGE: en
+#+PROPERTY: header-args :results code replace :exports both :noweb yes :tangle no
+#+HTML_HEAD: <link rel="stylesheet" href="http://dakrone.github.io/org.css" type="text/css" />
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+OPTIONS: H:4 num:nil toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t
+#+OPTIONS: skip:nil d:(HIDE) tags:not-in-toc
+#+TODO: SOMEDAY(s) TODO(t) INPROGRESS(i) WAITING(w@/!) NEEDSREVIEW(n@/!) | DONE(d)
+#+TODO: WAITING(w@/!) HOLD(h@/!) | CANCELLED(c@/!)
+#+TAGS: export(e) noexport(n)
+#+STARTUP: fold nodlcheck lognotestate content
+
+* Histo test
+
+#+BEGIN_SRC es
+DELETE /test
+{}
+
+POST /test/doc/
+{"price": 10}
+
+POST /test/doc/
+{"price": 15}
+
+POST /test/doc/
+{"price": 55}
+
+POST /test/doc/
+{"price": 61}
+
+POST /test/doc/
+{"price": 70}
+
+POST /test/doc/
+{"price": 99}
+
+POST /test/doc/
+{"price": 160}
+
+POST /test/doc/
+{"price": 170}
+
+POST /test/doc/
+{"price": 171}
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC es
+{"_index":"test","_type":"doc","_id":"AU_XabymkQmFc0QHJJpS","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_Xab0CkQmFc0QHJJpT","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_Xab0QkQmFc0QHJJpU","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_Xab0ekQmFc0QHJJpV","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_Xab0zkQmFc0QHJJpW","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_Xab1CkQmFc0QHJJpX","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_Xab1QkQmFc0QHJJpY","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_Xab1ckQmFc0QHJJpZ","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_Xab1qkQmFc0QHJJpa","_version":1,"created":true}
+#+END_SRC
+
+#+BEGIN_SRC es :tablify prices :results raw table
+POST /test/doc/_search?
+{
+  "aggs" : {
+    "prices" : {
+      "histogram" : {
+        "field" : "price",
+        "interval" : 50,
+        "min_doc_count": 0
+      }
+    }
+  },
+  "size": 0
+}
+#+END_SRC
+
+#+RESULTS:
+| key | document count |
+|-----+----------------|
+|   0 |              2 |
+|  50 |              4 |
+| 100 |              0 |
+| 150 |              3 |
+
