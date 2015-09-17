@@ -223,7 +223,7 @@ POST /test/doc/_search
 If you are using org-mode 8.3.1 or later, you can generate pretty ASCII graphs
 from org-mode using
 [orgtbl-ascii-plot](http://orgmode.org/worg/org-contrib/orgtbl-ascii-plot.html)
-like so (hit `C-c C-c` on the `TBLFM` line to generate the graph:
+like so (hit `C-c C-c` on the `TBLFM` line to generate the graph):
 
 ```
 #+RESULTS:
