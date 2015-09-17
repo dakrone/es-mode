@@ -32,6 +32,7 @@
 ;;; Code:
 (require 'ob)
 (require 'es-mode)
+(require 'es-parse)
 
 (defcustom es-jq-path "jq"
   "Location of the `jq' tool"
@@ -64,7 +65,7 @@ just a normal .es file that contains the body of the block.."
                 url
                 body)))))
 
-(defun es-org-execute-request (jq-header)
+(defun es-org-execute-request (jq-header &optional tablify)
   "Executes a request with parameters that are above the request.
 Does not move the point."
   (interactive)
@@ -80,7 +81,8 @@ Does not move the point."
                                               (region-end))
                             'utf-8)))
     (when (es--warn-on-delete-yes-or-no-p)
-      (message "Issuing %s against %s" url-request-method url)
+      (message "Issuing %s against %s [jq=%s, tablify=%s]"
+               url-request-method url jq-header tablify)
       (let* ((buffer (url-retrieve-synchronously url)))
         (unless (zerop (buffer-size buffer))
           (prog1
@@ -98,7 +100,9 @@ Does not move the point."
                      (format "%s %s" es-jq-path (shell-quote-argument jq-header))
                      (current-buffer)
                      t)))
-                (buffer-string))
+                (if tablify
+                    (es-parse-histogram-to-table (buffer-string) tablify)
+                  (buffer-string)))
             (kill-buffer buffer)))))))
 
 (defun org-babel-execute:es (body params)
@@ -115,7 +119,9 @@ to do that."
     (beginning-of-buffer)
     (es-mark-request-body)
     (let ((output (when mark-active
-                    (es-org-execute-request (cdr (assoc :jq params))))))
+                    (es-org-execute-request
+                     (cdr (assoc :jq params))
+                     (cdr (assoc :tablify params))))))
       (ignore-errors
         (while t
           (es-goto-next-request)
@@ -123,7 +129,9 @@ to do that."
           (setq output
                 (concat output
                         "\n"
-                        (es-org-execute-request (cdr (assoc :jq params)))))))
+                        (es-org-execute-request
+                         (cdr (assoc :jq params))
+                         (cdr (assoc :tablify params)))))))
       output)))
 
 (provide 'ob-elasticsearch)

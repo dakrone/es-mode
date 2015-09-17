@@ -1,0 +1,130 @@
+#+TITLE:   Histogram tests
+#+AUTHOR:  Lee Hinman
+#+LANGUAGE: en
+#+PROPERTY: header-args :results code replace :exports both :noweb yes :tangle no
+#+HTML_HEAD: <link rel="stylesheet" href="http://dakrone.github.io/org.css" type="text/css" />
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+OPTIONS: H:4 num:nil toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t
+#+OPTIONS: skip:nil d:(HIDE) tags:not-in-toc
+#+TODO: SOMEDAY(s) TODO(t) INPROGRESS(i) WAITING(w@/!) NEEDSREVIEW(n@/!) | DONE(d)
+#+TODO: WAITING(w@/!) HOLD(h@/!) | CANCELLED(c@/!)
+#+TAGS: export(e) noexport(n)
+#+STARTUP: fold nodlcheck lognotestate content
+
+* Test Data
+First, you need to index the test data:
+
+#+BEGIN_SRC es
+DELETE /test
+{}
+
+POST /test/doc/
+{"price": 10, "type": "widget"}
+
+POST /test/doc/
+{"price": 15, "type": "cog"}
+
+POST /test/doc/
+{"price": 55, "type": "widget"}
+
+POST /test/doc/
+{"price": 61, "type": "foo"}
+
+POST /test/doc/
+{"price": 70, "type": "foo"}
+
+POST /test/doc/
+{"price": 99, "type": "foo"}
+
+POST /test/doc/
+{"price": 160, "type": "foo"}
+
+POST /test/doc/
+{"price": 170, "type": "eggplant"}
+
+POST /test/doc/
+{"price": 1, "type": "eggplant"}
+
+POST /test/doc/
+{"price": 12, "type": "eggplant"}
+
+POST /test/doc/
+{"price": 112, "type": "eggplant"}
+
+POST /test/doc/
+{"price": 99, "type": "eggplant"}
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_SRC es
+{"acknowledged":true}
+{"_index":"test","_type":"doc","_id":"AU_ZRjnfCPOs7WlNwXCO","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_ZRjovCPOs7WlNwXCP","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_ZRjpACPOs7WlNwXCQ","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_ZRjpRCPOs7WlNwXCR","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_ZRjpdCPOs7WlNwXCS","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_ZRjppCPOs7WlNwXCT","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_ZRjpzCPOs7WlNwXCU","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_ZRjqBCPOs7WlNwXCV","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_ZRjqLCPOs7WlNwXCW","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_ZRjqVCPOs7WlNwXCX","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_ZRjqgCPOs7WlNwXCY","_version":1,"created":true}
+{"_index":"test","_type":"doc","_id":"AU_ZRjqtCPOs7WlNwXCZ","_version":1,"created":true}
+#+END_SRC
+
+* Histogram org-table
+
+#+BEGIN_SRC es :tablify prices :results raw table
+POST /test/doc/_search
+{
+  "aggs" : {
+    "prices" : {
+      "histogram" : {
+        "field" : "price",
+        "interval" : 20,
+        "min_doc_count": 0
+      }
+    }
+  },
+  "size": 0
+}
+#+END_SRC
+
+#+RESULTS:
+| key | document count |
+|-----+----------------|
+|   0 |              4 |
+|  20 |              0 |
+|  40 |              1 |
+|  60 |              2 |
+|  80 |              2 |
+| 100 |              1 |
+| 120 |              0 |
+| 140 |              0 |
+| 160 |              2 |
+#+TBLFM: $3='(orgtbl-ascii-draw $2 0 5)
+
+#+BEGIN_SRC es :tablify my_terms_agg :results raw table
+POST /test/doc/_search
+{
+  "aggs" : {
+    "my_terms_agg" : {
+      "terms" : {
+        "field" : "type"
+      }
+    }
+  },
+  "size": 0
+}
+#+END_SRC
+
+#+RESULTS:
+| key      | document count |
+|----------+----------------|
+| eggplant |              5 |
+| foo      |              4 |
+| widget   |              2 |
+| cog      |              1 |
+#+TBLFM: $3='(orgtbl-ascii-draw $2 0 5)
+

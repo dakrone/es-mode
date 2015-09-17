@@ -155,6 +155,106 @@ Tangling these blocks will produce `<filename>.es`, if you specify the filename
 with `:tangle foo.sh`, es-mode will instead create a curl request for the body
 of the request.
 
+#### Generating org-mode tables from aggregations
+
+Es-mode supports rudimentary table creation from aggregations using the
+`:tablify` header parameter. For example, consider the following aggregations:
+
+```
+#+BEGIN_SRC es :tablify prices :results raw table
+POST /test/doc/_search
+{
+  "aggs" : {
+    "prices" : {
+      "histogram" : {
+        "field" : "price",
+        "interval" : 20,
+        "min_doc_count": 0
+      }
+    }
+  },
+  "size": 0
+}
+#+END_SRC
+
+#+RESULTS:
+| key | document count |
+|-----+----------------|
+|   0 |              4 |
+|  20 |              0 |
+|  40 |              1 |
+|  60 |              2 |
+|  80 |              2 |
+| 100 |              1 |
+| 120 |              0 |
+| 140 |              0 |
+| 160 |              2 |
+```
+
+Note that the "tablify" argument must be the name of the aggregation to be
+tablified, in this example, "prices" is the name of the argument.
+
+This also works for `terms` aggregations:
+
+```
+#+BEGIN_SRC es :tablify my_terms_agg :results raw table
+POST /test/doc/_search
+{
+  "aggs" : {
+    "my_terms_agg" : {
+      "terms" : {
+        "field" : "type"
+      }
+    }
+  },
+  "size": 0
+}
+#+END_SRC
+
+#+RESULTS:
+| key      | document count |
+|----------+----------------|
+| eggplant |              5 |
+| foo      |              4 |
+| widget   |              2 |
+| cog      |              1 |
+```
+
+If you are using org-mode 8.3.1 or later, you can generate pretty ASCII graphs
+from org-mode using
+[orgtbl-ascii-plot](http://orgmode.org/worg/org-contrib/orgtbl-ascii-plot.html)
+like so (hit `C-c C-c` on the `TBLFM` line to generate the graph):
+
+```
+#+RESULTS:
+| key | document count |            |
+|-----+----------------+------------|
+|   0 |              4 | WWWWWWWWWl |
+|  20 |              0 |            |
+|  40 |              1 | WWc        |
+|  60 |              2 | WWWWV      |
+|  80 |              2 | WWWWV      |
+| 100 |              1 | WWc        |
+| 120 |              0 |            |
+| 140 |              0 |            |
+| 160 |              2 | WWWWV      |
+#+TBLFM: $3='(orgtbl-ascii-draw $2 0 5)
+
+Or:
+
+#+RESULTS:
+| key      | document count |              |
+|----------+----------------+--------------|
+| eggplant |              5 | WWWWWWWWWWWW |
+| foo      |              4 | WWWWWWWWWl   |
+| widget   |              2 | WWWWV        |
+| cog      |              1 | WWc          |
+#+TBLFM: $3='(orgtbl-ascii-draw $2 0 5)
+```
+
+Be sure to pass the correct minimum and maximum values for the table (in this
+example, 0 and 5) to the `orgtbl-ascii-draw` method.
+
 #### Passing JSON through [jq](https://stedolan.github.io/jq/)
 
 In org-mode you can also reduce the size of results by passing them through the
