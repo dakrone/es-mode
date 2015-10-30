@@ -18,7 +18,7 @@ your sources:
 ```elisp
 (require 'package)
 (add-to-list 'package-archives
-             '("MELPA" . "http://melpa.milkbox.net/packages/" ))
+             '("MELPA" . "https://melpa.org/packages/" ))
 ```
 
 Then run `M-x package-refresh-contents` to load the contents of the new
