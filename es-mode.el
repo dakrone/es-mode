@@ -586,16 +586,21 @@ available. Returns true if one was found, nil otherwise."
   (forward-line -1)
   (es-mark-request-body)
   (deactivate-mark)
-  (ignore-errors
-    (re-search-backward
-     (concat "}\\\|" (concat "^" (regexp-opt es-http-builtins-all) " .*$"))))
-  (es-mark-request-body)
-  (deactivate-mark)
-  (forward-line -1)
-  (beginning-of-line)
-  (unless (looking-at es--method-url-regexp)
-    (search-forward "{")
-    (backward-char)))
+  (let ((found? (ignore-errors
+                  (re-search-backward
+                   (concat
+                    "}\\\|"
+                    (concat
+                     "^" (regexp-opt es-http-builtins-all) " .*$"))))))
+    (es-mark-request-body)
+    (deactivate-mark)
+    (forward-line -1)
+    (beginning-of-line)
+    (unless (looking-at es--method-url-regexp)
+      (ignore-errors
+        (search-forward "{")
+        (backward-char)))
+    (not (not found?))))
 
 (defun es-goto-next-request ()
   "Advance the point to the next parameter declaration, if
@@ -606,13 +611,19 @@ available. Returns true if one was found, nil otherwise."
   (when (looking-at "{")
     (forward-sexp))
   (deactivate-mark)
-  (ignore-errors
-    (re-search-forward
-     (concat "{\\\|" (concat "^" (regexp-opt es-http-builtins-all) " .*$"))))
-  (beginning-of-line)
-  (unless (looking-at es--method-url-regexp)
-    (search-forward "{")
-    (backward-char)))
+  (let ((found? (ignore-errors
+                  (re-search-forward
+                   (concat
+                    "{\\\|"
+                    (concat
+                     "^" (regexp-opt es-http-builtins-all) " .*$"))))))
+    (beginning-of-line)
+    (unless (looking-at es--method-url-regexp)
+      (ignore-errors
+        (search-forward "{")
+        (backward-char)))
+    ;; Coerce to `t' or `nil'
+    (not (not found?))))
 
 (defmacro es-save-everything (&rest args)
   `(,(if (fboundp

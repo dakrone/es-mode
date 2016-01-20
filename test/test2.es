@@ -63,3 +63,9 @@ GET test/doc/1
 
 GET _cat/nodes?v
 {}
+
+{
+  "query": {
+    "match_all": {}
+  }
+}
