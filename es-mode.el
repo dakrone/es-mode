@@ -155,7 +155,7 @@ the user on DELETE requests."
 (defconst es-vars
   '(;;; Parent types (combiners)
     #("bool" 0 1
-      ( :type "parent" :summary "Parent combining multiple filters/queries"))
+      (:type "parent" :summary "Parent combining multiple filters/queries"))
     #("filtered" 0 1
       (:type "parent" :summary "Parent query combining a filter and a query"))
     #("and" 0 1
@@ -362,9 +362,9 @@ the user on DELETE requests."
 
 (defvar es-query-types
   (cl-remove-if-not (lambda (c) (or (string= "filter" (es-extract-type-raw c))
-                            (string= "query" (es-extract-type-raw c))
-                            (string= "both" (es-extract-type-raw c))))
-                 es-vars)
+                               (string= "query" (es-extract-type-raw c))
+                               (string= "both" (es-extract-type-raw c))))
+                    es-vars)
   "Various leaf-type queries and filters")
 
 (defconst es--method-url-regexp
@@ -395,8 +395,8 @@ has not been set, in which case it prompts the user."
                  (command-execute 'es-set-endpoint-url))))
 
     (if (and (not (string-prefix-p "http://" url t))
-	     (not (string-prefix-p "https://" url t)))
-	(concat "http://" url)
+             (not (string-prefix-p "https://" url t)))
+        (concat "http://" url)
       url)))
 
 (defun es-set-request-method (new-request-method)
@@ -567,7 +567,7 @@ the end."
   (let ((p (point)))
     (beginning-of-line)
     (cond ((es--at-current-header-p)
-           (search-forward "{"))
+           (re-search-forward "{\\\|^$"))
           ((looking-at "^\\s *$")
            (forward-line -1)))
     (ignore-errors
@@ -575,16 +575,20 @@ the end."
         (backward-up-list)))
     (if (looking-at "{")
         (mark-sexp)
-      (goto-char p))))
+      (goto-char p)
+      (forward-line 1)
+      (set-mark (point)))))
 
 (defun es-goto-previous-request ()
   "Advance the point to the previous parameter declaration, if
 available. Returns true if one was found, nil otherwise."
   (interactive)
+  (forward-line -1)
   (es-mark-request-body)
   (deactivate-mark)
   (ignore-errors
-    (search-backward "}"))
+    (re-search-backward
+     (concat "}\\\|" (concat "^" (regexp-opt es-http-builtins-all) " .*$"))))
   (es-mark-request-body)
   (deactivate-mark)
   (forward-line -1)
@@ -597,16 +601,23 @@ available. Returns true if one was found, nil otherwise."
   "Advance the point to the next parameter declaration, if
 available. Returns true if one was found, nil otherwise."
   (interactive)
+  (forward-line 1)
   (es-mark-request-body)
   (when (looking-at "{")
     (forward-sexp))
   (deactivate-mark)
-  (search-forward "{")
-  (forward-line -1)
+  (ignore-errors
+    (re-search-forward
+     (concat "{\\\|" (concat "^" (regexp-opt es-http-builtins-all) " .*$"))))
   (beginning-of-line)
   (unless (looking-at es--method-url-regexp)
     (search-forward "{")
     (backward-char)))
+
+(defmacro es-save-everything (&rest args)
+  `(,(if (fboundp
+          'save-mark-and-excursion) 'save-mark-and-excursion 'save-excursion)
+    ,@args))
 
 (defun es-execute-request-dwim (prefix)
   "Executes a request with parameters if found, otherwises
@@ -615,18 +626,18 @@ send the region as a request to/use the predefined vars. Does not
 move the point. If a prefix, `C-u', is given, all the requests in
 the buffer is executed from top to bottom."
   (interactive "P")
-  (save-excursion
-    (when prefix
-      (goto-char (point-min))
-      (setq es--query-number 1))
-    (es-mark-request-body)
-    (es--execute-region)
-    (when prefix
-      (while (es-goto-next-request)
-        (setq es--query-number (1+ es--query-number))
-        (es-mark-request-body)
-        (es--execute-region))
-      (setq es--query-number 0))))
+  (es-save-everything
+   (when prefix
+     (goto-char (point-min))
+     (setq es--query-number 1))
+   (es-mark-request-body)
+   (es--execute-region)
+   (when prefix
+     (while (es-goto-next-request)
+       (setq es--query-number (1+ es--query-number))
+       (es-mark-request-body)
+       (es--execute-region))
+     (setq es--query-number 0))))
 
 (defun es-result-show-response ()
   "Shows the header of the response from the server in the
