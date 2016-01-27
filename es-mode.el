@@ -5,7 +5,7 @@
 
 ;; Author: Lee Hinman <lee@writequit.org>
 ;; URL: http://www.github.com/dakrone/es-mode
-;; Version: 4.0.0
+;; Version: 4.1.0
 ;; Keywords: elasticsearch
 ;; Package-Requires: ((dash "2.11.0"))
 
