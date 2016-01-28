@@ -7,7 +7,7 @@
 ;; URL: http://www.github.com/dakrone/es-mode
 ;; Version: 4.1.1
 ;; Keywords: elasticsearch
-;; Package-Requires: ((dash "2.11.0"))
+;; Package-Requires: ((dash "2.11.0") (cl-lib "0.5"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -131,218 +131,221 @@ the user on DELETE requests."
   "The variable containing the response header from the result in
   a result buffer.")
 
-(defvar es-top-level-fields
-  '("aggregations" "aggs" "facets" "filter"
-    "post_filter" "query")
-  "Top-level query and filter containers")
+(eval-and-compile
+  (defvar es-top-level-fields
+    '("aggregations" "aggs" "facets" "filter"
+      "post_filter" "query")
+    "Top-level query and filter containers"))
 
-(defvar es-keywords
-  '("fields" "from" "size" "highlight" "_name" "_cache" "_cache_key")
-  "Top-level fields supported by all queries")
+(eval-and-compile
+  (defvar es-keywords
+    '("fields" "from" "size" "highlight" "_name" "_cache" "_cache_key")
+    "Top-level fields supported by all queries")
 
-(defvar es-warnings
-  '("DELETE")
-  "HTTP methods that should be highlighted as warnings")
+  (defvar es-warnings
+    '("DELETE")
+    "HTTP methods that should be highlighted as warnings")
 
-(defvar es-http-builtins
-  '("GET" "OPTIONS" "PATCH" "POST" "PUT")
-  "HTTP methods used by curl")
+  (defvar es-http-builtins
+    '("GET" "OPTIONS" "PATCH" "POST" "PUT")
+    "HTTP methods used by curl")
 
-(defvar es-http-builtins-all
-  (cons "DELETE" es-http-builtins)
-  "HTTP methods, including `DELETE'")
+  (defvar es-http-builtins-all
+    (cons "DELETE" es-http-builtins)
+    "HTTP methods, including `DELETE'")
 
-(defconst es-vars
-  '(;;; Parent types (combiners)
-    #("bool" 0 1
-      (:type "parent" :summary "Parent combining multiple filters/queries"))
-    #("filtered" 0 1
-      (:type "parent" :summary "Parent query combining a filter and a query"))
-    #("and" 0 1
-      (:type "parent" :summary "Parent combining multiple filters/queries, prefer <bool>"))
-    #("or" 0 1
-      (:type "parent" :summary "Parent combining multiple filters/queries, prefer <bool>"))
-    #("not" 0 1
-      (:type "parent" :summary "Parent combining multiple filters/queries, prefer <bool>"))
+  (defconst es-vars
+    '( ;;; Parent types (combiners)
+      #("bool" 0 1
+        (:type "parent" :summary "Parent combining multiple filters/queries"))
+      #("filtered" 0 1
+        (:type "parent" :summary "Parent query combining a filter and a query"))
+      #("and" 0 1
+        (:type "parent" :summary "Parent combining multiple filters/queries, prefer <bool>"))
+      #("or" 0 1
+        (:type "parent" :summary "Parent combining multiple filters/queries, prefer <bool>"))
+      #("not" 0 1
+        (:type "parent" :summary "Parent combining multiple filters/queries, prefer <bool>"))
 
-    ;;; Both queries and filter
-    #("term" 0 1
-      (:type "both" :summary "Query or filter that does not analyze the text"))
-    #("match_all" 0 1
-      (:type "both" :summary "Query or filter matching every document"))
-    #("has_child" 0 1
-      (:type "both" :summary "Query or filter for parent documents with matching children"))
-    #("has_parent" 0 1
-      (:type "both" :summary "Query or filter for child documents with matching parents"))
-    #("nested" 0 1
-      (:type "both" :summary "Query or filter for surrounding documents with matching nested docs"))
-    #("prefix" 0 1
-      (:type "both" :summary "Query or filter for terms with a given prefix"))
-    #("regexp" 0 1
-      (:type "both" :summary "Query or filter for terms matching a given regular expression"))
+;;; Both queries and filter
+      #("term" 0 1
+        (:type "both" :summary "Query or filter that does not analyze the text"))
+      #("match_all" 0 1
+        (:type "both" :summary "Query or filter matching every document"))
+      #("has_child" 0 1
+        (:type "both" :summary "Query or filter for parent documents with matching children"))
+      #("has_parent" 0 1
+        (:type "both" :summary "Query or filter for child documents with matching parents"))
+      #("nested" 0 1
+        (:type "both" :summary "Query or filter for surrounding documents with matching nested docs"))
+      #("prefix" 0 1
+        (:type "both" :summary "Query or filter for terms with a given prefix"))
+      #("regexp" 0 1
+        (:type "both" :summary "Query or filter for terms matching a given regular expression"))
 
-    ;;; Queries
-    #("match" 0 1
-      (:type "query" :summary "Query that analyzes the search term according to the field's analyzer"))
-    #("multi_match" 0 1
-      (:type "query" :summary "Query similar to `match' query for multiple fields"))
-    #("boosting" 0 1
-      (:type "query" :summary "Query promoting or demoting results matching a query"))
-    #("common" 0 1
-      (:type "query" :summary "Query with cutoff for common terms"))
-    #("constant_score" 0 1
-      (:type "query" :summary "Query wrapping a filter returning a constant score value"))
-    #("dis_max" 0 1
-      (:type "query" :summary "Query for disjuntive max of multiple queries"))
-    #("fuzzy_like_this" 0 1
-      (:type "query" :summary "Query for other documents like the query text"))
-    #("fuzzy_like_this_field" 0 1
-      (:type "query" :summary "Query for other documents like the query text using a certain field"))
-    #("function_score" 0 1
-      (:type "query" :summary "Query with custom scoring functions"))
-    #("fuzzy" 0 1
-      (:type "query" :summary "Query for matching terms using Levenshtein distance"))
-    #("more_like_this" 0 1
-      (:type "query" :summary "Query for other documents like a particular document"))
-    #("more_like_this_field" 0 1
-      (:type "query" :summary "Query for other documents like a particular document using a certain field"))
-    #("query_string" 0 1
-      (:type "query" :summary "Query for documents with Lucene's powerful but error-prone query string syntax"))
-    #("simple_query_string" 0 1
-      (:type "query" :summary "Query for documents with the simple query string syntax"))
-    #("span_first" 0 1
-      (:type "query" :summary "Matches spans near the beginning of a field"))
-    #("span_multi" 0 1
-      (:type "query" :summary "Wrap a multi term query as a span query"))
-    #("span_near" 0 1
-      (:type "query" :summary "Matches spans which are near one another"))
-    #("span_not" 0 1
-      (:type "query" :summary "Removes matches which overlap with another span query"))
-    #("span_or" 0 1
-      (:type "query" :summary "Matches the union of its span clauses"))
-    #("span_term" 0 1
-      (:type "query" :summary "Matches spans containing a term"))
-    #("wildcard" 0 1
-      (:type "query" :summary "Query matching documents that have fields matching a wildcard expression (not analyzed)"))
-    #("top_children" 0 1
-      (:type "filter" :summary "Execute a child query, and out of the hit docs, aggregates it into parent docs"))
+;;; Queries
+      #("match" 0 1
+        (:type "query" :summary "Query that analyzes the search term according to the field's analyzer"))
+      #("multi_match" 0 1
+        (:type "query" :summary "Query similar to `match' query for multiple fields"))
+      #("boosting" 0 1
+        (:type "query" :summary "Query promoting or demoting results matching a query"))
+      #("common" 0 1
+        (:type "query" :summary "Query with cutoff for common terms"))
+      #("constant_score" 0 1
+        (:type "query" :summary "Query wrapping a filter returning a constant score value"))
+      #("dis_max" 0 1
+        (:type "query" :summary "Query for disjuntive max of multiple queries"))
+      #("fuzzy_like_this" 0 1
+        (:type "query" :summary "Query for other documents like the query text"))
+      #("fuzzy_like_this_field" 0 1
+        (:type "query" :summary "Query for other documents like the query text using a certain field"))
+      #("function_score" 0 1
+        (:type "query" :summary "Query with custom scoring functions"))
+      #("fuzzy" 0 1
+        (:type "query" :summary "Query for matching terms using Levenshtein distance"))
+      #("more_like_this" 0 1
+        (:type "query" :summary "Query for other documents like a particular document"))
+      #("more_like_this_field" 0 1
+        (:type "query" :summary "Query for other documents like a particular document using a certain field"))
+      #("query_string" 0 1
+        (:type "query" :summary "Query for documents with Lucene's powerful but error-prone query string syntax"))
+      #("simple_query_string" 0 1
+        (:type "query" :summary "Query for documents with the simple query string syntax"))
+      #("span_first" 0 1
+        (:type "query" :summary "Matches spans near the beginning of a field"))
+      #("span_multi" 0 1
+        (:type "query" :summary "Wrap a multi term query as a span query"))
+      #("span_near" 0 1
+        (:type "query" :summary "Matches spans which are near one another"))
+      #("span_not" 0 1
+        (:type "query" :summary "Removes matches which overlap with another span query"))
+      #("span_or" 0 1
+        (:type "query" :summary "Matches the union of its span clauses"))
+      #("span_term" 0 1
+        (:type "query" :summary "Matches spans containing a term"))
+      #("wildcard" 0 1
+        (:type "query" :summary "Query matching documents that have fields matching a wildcard expression (not analyzed)"))
+      #("top_children" 0 1
+        (:type "filter" :summary "Execute a child query, and out of the hit docs, aggregates it into parent docs"))
 
-    ;;; Filters
-    #("range" 0 1
-      (:type "filter" ;; technically both, but only should be used as a filter
-             :summary "Filter between two numeric or lexographic values"))
-    #("geoshape" 0 1
-      (:type "filter" :summary "Filter documents inside shape"))
-    #("ids" 0 1
-      (:type "filter" :summary "Filter documents by id"))
-    #("indices" 0 1
-      (:type "filter" :summary "Filter documents differently depending on matching or not matching a document"))
-    #("terms" 0 1
-      (:type "filter" :summary "Filter documents with an array of terms"))
-    #("exists" 0 1
-      (:type "filter" :summary "Filter documents where a specific field has a value in them"))
-    #("geo_bbox" 0 1
-      (:type "filter" :summary "Filter documents inside of a geographical bounding box"))
-    #("geo_distance" 0 1
-      (:type "filter" :summary "Filter documents within the distance from a point"))
-    #("geo_distance_range" 0 1
-      (:type "filter" :summary "Filter documents inside a distance range from a point"))
-    #("geo_polygon" 0 1
-      (:type "filter" :summary "Filter documents falling inside a geographic polygon"))
-    #("geoshape" 0 1
-      (:type "filter" :summary "Filter documents falling inside a geoshape"))
-    #("geohash_cell" 0 1
-      (:type "filter" :summary "Filter documents falling inside a geohash cell"))
-    #("limit" 0 1
-      (:type "filter" :summary "Filter limiting the number of documents (per shard) to execute on"))
-    #("missing" 0 1
-      (:type "filter" :summary "Filter documents missing a specific field"))
-    #("script" 0 1
-      (:type "filter" :summary "Filter with an arbitrary script"))
-    #("type" 0 1
-      (:type "filter" :summary "Filter based on document type"))
+;;; Filters
+      #("range" 0 1
+        (:type "filter" ;; technically both, but only should be used as a filter
+               :summary "Filter between two numeric or lexographic values"))
+      #("geoshape" 0 1
+        (:type "filter" :summary "Filter documents inside shape"))
+      #("ids" 0 1
+        (:type "filter" :summary "Filter documents by id"))
+      #("indices" 0 1
+        (:type "filter" :summary "Filter documents differently depending on matching or not matching a document"))
+      #("terms" 0 1
+        (:type "filter" :summary "Filter documents with an array of terms"))
+      #("exists" 0 1
+        (:type "filter" :summary "Filter documents where a specific field has a value in them"))
+      #("geo_bbox" 0 1
+        (:type "filter" :summary "Filter documents inside of a geographical bounding box"))
+      #("geo_distance" 0 1
+        (:type "filter" :summary "Filter documents within the distance from a point"))
+      #("geo_distance_range" 0 1
+        (:type "filter" :summary "Filter documents inside a distance range from a point"))
+      #("geo_polygon" 0 1
+        (:type "filter" :summary "Filter documents falling inside a geographic polygon"))
+      #("geoshape" 0 1
+        (:type "filter" :summary "Filter documents falling inside a geoshape"))
+      #("geohash_cell" 0 1
+        (:type "filter" :summary "Filter documents falling inside a geohash cell"))
+      #("limit" 0 1
+        (:type "filter" :summary "Filter limiting the number of documents (per shard) to execute on"))
+      #("missing" 0 1
+        (:type "filter" :summary "Filter documents missing a specific field"))
+      #("script" 0 1
+        (:type "filter" :summary "Filter with an arbitrary script"))
+      #("type" 0 1
+        (:type "filter" :summary "Filter based on document type"))
 
-    ;;; Aggregations
-    #("min" 0 1
-      (:type "agg" :summary "Aggregation for minimum value"))
-    #("max" 0 1
-      (:type "agg" :summary "Aggregation for maximum value"))
-    #("sum" 0 1
-      (:type "agg" :summary "Aggregation for sum of values"))
-    #("avg" 0 1
-      (:type "agg" :summary "Aggregation for average of values"))
-    #("stats" 0 1
-      (:type "agg" :summary "Aggregation calculating statistics of numeric values"))
-    #("extended_stats" 0 1
-      (:type "agg" :summary "Aggregation calculating extended statistics of numeric values"))
-    #("value_count" 0 1
-      (:type "agg" :summary "Aggregation counting number of values extracted from field"))
-    #("percentiles" 0 1
-      (:type "agg" :summary "Aggregation calculating percentiles of numeric values"))
-    #("percentile_ranks" 0 1
-      (:type "agg" :summary "Aggregation calculating percentile rank of numeric values"))
-    #("cardinality" 0 1
-      (:type "agg" :summary "Aggregation calculating cardinality of a field"))
-    #("geo_bounds" 0 1
-      (:type "agg" :summary "Aggregation within geo bounding box"))
-    #("top_hits" 0 1
-      (:type "agg" :summary "Aggregation of results within a bucket (join)"))
-    #("global" 0 1
-      (:type "agg" :summary "Aggregation returning all results regardless of scope"))
-    #("reverse_nested" 0 1
-      (:type "agg" :summary "Aggregation for reverse nested documents"))
-    #("terms" 0 1
-      (:type "agg" :summary "Aggregation calculating most or least common terms"))
-    #("significant_terms" 0 1
-      (:type "agg" :summary "Aggregation returning interesting or unusual occurrences of terms in a set"))
-    #("range" 0 1
-      (:type "agg" :summary "Aggregation of documents within ranges"))
-    #("date_range" 0 1
-      (:type "agg" :summary "Aggregation of documents within a date range"))
-    #("ip_range" 0 1
-      (:type "agg" :summary "Aggregation of documents within an IP address range"))
-    #("missing" 0 1
-      (:type "agg" :summary "Aggregation of documents missing a field value"))
-    #("histogram" 0 1
-      (:type "agg" :summary "Aggregation of documents within numeric slices"))
-    #("date_histogram" 0 1
-      (:type "agg" :summary "Aggregation of documents within date slices"))
-    #("filters" 0 1
-      (:type "agg" :summary "Aggregation bucketing documents into buckets defined by filters"))
+;;; Aggregations
+      #("min" 0 1
+        (:type "agg" :summary "Aggregation for minimum value"))
+      #("max" 0 1
+        (:type "agg" :summary "Aggregation for maximum value"))
+      #("sum" 0 1
+        (:type "agg" :summary "Aggregation for sum of values"))
+      #("avg" 0 1
+        (:type "agg" :summary "Aggregation for average of values"))
+      #("stats" 0 1
+        (:type "agg" :summary "Aggregation calculating statistics of numeric values"))
+      #("extended_stats" 0 1
+        (:type "agg" :summary "Aggregation calculating extended statistics of numeric values"))
+      #("value_count" 0 1
+        (:type "agg" :summary "Aggregation counting number of values extracted from field"))
+      #("percentiles" 0 1
+        (:type "agg" :summary "Aggregation calculating percentiles of numeric values"))
+      #("percentile_ranks" 0 1
+        (:type "agg" :summary "Aggregation calculating percentile rank of numeric values"))
+      #("cardinality" 0 1
+        (:type "agg" :summary "Aggregation calculating cardinality of a field"))
+      #("geo_bounds" 0 1
+        (:type "agg" :summary "Aggregation within geo bounding box"))
+      #("top_hits" 0 1
+        (:type "agg" :summary "Aggregation of results within a bucket (join)"))
+      #("global" 0 1
+        (:type "agg" :summary "Aggregation returning all results regardless of scope"))
+      #("reverse_nested" 0 1
+        (:type "agg" :summary "Aggregation for reverse nested documents"))
+      #("terms" 0 1
+        (:type "agg" :summary "Aggregation calculating most or least common terms"))
+      #("significant_terms" 0 1
+        (:type "agg" :summary "Aggregation returning interesting or unusual occurrences of terms in a set"))
+      #("range" 0 1
+        (:type "agg" :summary "Aggregation of documents within ranges"))
+      #("date_range" 0 1
+        (:type "agg" :summary "Aggregation of documents within a date range"))
+      #("ip_range" 0 1
+        (:type "agg" :summary "Aggregation of documents within an IP address range"))
+      #("missing" 0 1
+        (:type "agg" :summary "Aggregation of documents missing a field value"))
+      #("histogram" 0 1
+        (:type "agg" :summary "Aggregation of documents within numeric slices"))
+      #("date_histogram" 0 1
+        (:type "agg" :summary "Aggregation of documents within date slices"))
+      #("filters" 0 1
+        (:type "agg" :summary "Aggregation bucketing documents into buckets defined by filters"))
 
-    ;;; Pipeline aggregations
-    #("avg_bucket" 0 1
-      (:type "pipeline agg" :summary "Calculates the (mean) average value of a specified metric in a sibling aggregation"))
-    #("derivative" 0 1
-      (:type "pipeline agg" :summary "Calculates the derivative of a specified metric in a parent histogram (or date_histogram) aggregation"))
-    #("max_bucket" 0 1
-      (:type "pipeline agg" :summary "Identifies the bucket(s) with the maximum value of a specified metric in a sibling aggregation"))
-    #("min_bucket" 0 1
-      (:type "pipeline agg" :summary "Identifies the bucket(s) with the minimum value of a specified metric in a sibling aggregation"))
-    #("sum_bucket" 0 1
-      (:type "pipeline agg" :summary "Calculates the sum across all bucket of a specified metric in a sibling aggregation"))
-    #("stats_bucket" 0 1
-      (:type "pipeline agg" :summary "Calculates a variety of stats across all bucket of a specified metric in a sibling aggregation"))
-    #("extended_stats_bucket" 0 1
-      (:type "pipeline agg" :summary "Calculates a variety of stats (more than regular stats) across all bucket of a specified metric in a sibling aggregation"))
-    #("percentiles_bucket" 0 1
-      (:type "pipeline agg" :summary "Calculates percentiles across all buckets of a specified metric in a sibling aggregation"))
-    #("moving_avg" 0 1
-      (:type "pipeline agg" :summary "Given an ordered series of data, will slide a window across the data and emit the average value of that window"))
-    #("cumulative_sum" 0 1
-      (:type "pipeline agg" :summary "Calculates the cumulative sum of a specified metric in a parent histogram (or date_histogram) aggregation"))
-    #("bucket_script" 0 1
-      (:type "pipeline agg" :summary "Executes a script which can perform per bucket computations on specified metrics in the parent aggregation"))
-    #("bucket_selector" 0 1
-      (:type "pipeline agg" :summary "Executes a script which determines whether the current bucket will be retained in the parent multi-bucket aggregation"))
-    #("serial_diff" 0 1
-      (:type "pipeline agg" :summary "A technique where values in a time series are subtracted from itself at different time lags or periods"))
-    )
-  "Vars used for query and filter completion")
+;;; Pipeline aggregations
+      #("avg_bucket" 0 1
+        (:type "pipeline agg" :summary "Calculates the (mean) average value of a specified metric in a sibling aggregation"))
+      #("derivative" 0 1
+        (:type "pipeline agg" :summary "Calculates the derivative of a specified metric in a parent histogram (or date_histogram) aggregation"))
+      #("max_bucket" 0 1
+        (:type "pipeline agg" :summary "Identifies the bucket(s) with the maximum value of a specified metric in a sibling aggregation"))
+      #("min_bucket" 0 1
+        (:type "pipeline agg" :summary "Identifies the bucket(s) with the minimum value of a specified metric in a sibling aggregation"))
+      #("sum_bucket" 0 1
+        (:type "pipeline agg" :summary "Calculates the sum across all bucket of a specified metric in a sibling aggregation"))
+      #("stats_bucket" 0 1
+        (:type "pipeline agg" :summary "Calculates a variety of stats across all bucket of a specified metric in a sibling aggregation"))
+      #("extended_stats_bucket" 0 1
+        (:type "pipeline agg" :summary "Calculates a variety of stats (more than regular stats) across all bucket of a specified metric in a sibling aggregation"))
+      #("percentiles_bucket" 0 1
+        (:type "pipeline agg" :summary "Calculates percentiles across all buckets of a specified metric in a sibling aggregation"))
+      #("moving_avg" 0 1
+        (:type "pipeline agg" :summary "Given an ordered series of data, will slide a window across the data and emit the average value of that window"))
+      #("cumulative_sum" 0 1
+        (:type "pipeline agg" :summary "Calculates the cumulative sum of a specified metric in a parent histogram (or date_histogram) aggregation"))
+      #("bucket_script" 0 1
+        (:type "pipeline agg" :summary "Executes a script which can perform per bucket computations on specified metrics in the parent aggregation"))
+      #("bucket_selector" 0 1
+        (:type "pipeline agg" :summary "Executes a script which determines whether the current bucket will be retained in the parent multi-bucket aggregation"))
+      #("serial_diff" 0 1
+        (:type "pipeline agg" :summary "A technique where values in a time series are subtracted from itself at different time lags or periods"))
+      )
+    "Vars used for query and filter completion"))
 
-(defun es-extract-type-raw (s)
-  "Extract the type of operation from the var, without formatting"
-  (get-text-property 0 :type s))
+(eval-and-compile
+  (defun es-extract-type-raw (s)
+    "Extract the type of operation from the var, without formatting"
+    (get-text-property 0 :type s)))
 
 (defun es-extract-type (s)
   "Extract the type of operation from the var"
@@ -352,20 +355,21 @@ the user on DELETE requests."
   "Extract the summary of the operation from the var"
   (get-text-property 0 :summary s))
 
-(defvar es-facet-types
-  (cl-remove-if-not (lambda (c) (string= "agg" (es-extract-type-raw c))) es-vars)
-  "Facets/Aggregations")
+(eval-and-compile
+  (defvar es-facet-types
+    (cl-remove-if-not (lambda (c) (string= "agg" (es-extract-type-raw c))) es-vars)
+    "Facets/Aggregations")
 
-(defvar es-parent-types
-  (cl-remove-if-not (lambda (c) (string= "parent" (es-extract-type-raw c))) es-vars)
-  "Compound queries that always contain additional queries or filters")
+  (defvar es-parent-types
+    (cl-remove-if-not (lambda (c) (string= "parent" (es-extract-type-raw c))) es-vars)
+    "Compound queries that always contain additional queries or filters")
 
-(defvar es-query-types
-  (cl-remove-if-not (lambda (c) (or (string= "filter" (es-extract-type-raw c))
-                               (string= "query" (es-extract-type-raw c))
-                               (string= "both" (es-extract-type-raw c))))
-                    es-vars)
-  "Various leaf-type queries and filters")
+  (defvar es-query-types
+    (cl-remove-if-not (lambda (c) (or (string= "filter" (es-extract-type-raw c))
+                                      (string= "query" (es-extract-type-raw c))
+                                      (string= "both" (es-extract-type-raw c))))
+                      es-vars)
+    "Various leaf-type queries and filters"))
 
 (defconst es--method-url-regexp
   (concat "^\\("
@@ -456,7 +460,7 @@ in which case it prompts the user."
 
 (defun es-old-company-backend (command &optional arg &rest ign)
   "The old `company-backend' for es-queries and facets."
-  (case command
+  (cl-case command
     (prefix (let ((sym (company-grab-symbol)))
               (if (string-match "\"\\(.*\\)\"?" sym)
                   (match-string 1 sym)
