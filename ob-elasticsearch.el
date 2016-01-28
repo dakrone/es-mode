@@ -123,8 +123,7 @@ to do that."
                      (cdr (assoc :jq params))
                      (cdr (assoc :tablify params))))))
       (ignore-errors
-        (while t
-          (es-goto-next-request)
+        (while (es-goto-next-request)
           (es-mark-request-body)
           (setq output
                 (concat output
