@@ -456,7 +456,7 @@ in which case it prompts the user."
 
 (defun es-old-company-backend (command &optional arg &rest ign)
   "The old `company-backend' for es-queries and facets."
-  (case command
+  (cl-case command
     (prefix (let ((sym (company-grab-symbol)))
               (if (string-match "\"\\(.*\\)\"?" sym)
                   (match-string 1 sym)
