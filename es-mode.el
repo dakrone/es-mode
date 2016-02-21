@@ -557,8 +557,8 @@ vars."
       (message "Issuing %s against %s" url-request-method url)
       (url-retrieve url 'es-result--handle-response (list result-buffer-name))
       (setq es-results-buffer (get-buffer-create result-buffer-name))
-      (view-buffer-other-window es-results-buffer)
-      (other-window -1))))
+      (save-selected-window
+        (view-buffer-other-window es-results-buffer)))))
 
 (defun es--at-current-header-p ()
   "Returns t if at on a header line, nil otherwise."
