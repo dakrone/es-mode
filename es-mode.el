@@ -106,6 +106,12 @@ evaluation."
   :group 'es
   :type 'boolean)
 
+(defcustom es-always-pretty-print nil
+  "If set to `t', results will always be pretty printed without
+having to add the `?pretty' flag to the URL manually."
+  :group 'es-mode
+  :type 'boolean)
+
 (defvar es-request-method nil
   "The current request method used for this buffer.")
 
@@ -531,6 +537,20 @@ in which case it prompts the user."
         "Do you really want to send a DELETE request?"
         'font-lock-face 'font-lock-warning-face))))
 
+(defun es--munge-url (url)
+  "Do whatever is necessary to mutate the ES `url' before the
+  HTTP request is sent. Currently only checks
+  `es-always-pretty-print' and adds the `pretty' parameter as
+  needed."
+  (if (and es-always-pretty-print
+           ;; If a user has already specified a 'pretty' option, don't modify
+           ;; url so it can be overridden
+           (not (string-match (regexp-opt '("?pretty" "&pretty")) url)))
+      (if (string-match "\\?" url)
+          (concat url "&pretty=true")
+        (concat url "?pretty=true"))
+    url))
+
 (defvar es--query-number 0)
 
 (defun es--execute-region ()
@@ -541,10 +561,11 @@ vars."
   (let* ((beg (if (region-active-p) (region-beginning) (point-min)))
          (end (if (region-active-p) (region-end) (point-max)))
          (url-request-extra-headers
-          '(("Content-Type" . "application/x-www-form-urlencoded; charset=UTF-8")))
+          '(("Content-Type" .
+             "application/x-www-form-urlencoded; charset=UTF-8")))
          (params (or (es--find-params)
                      `(,(es-get-request-method) . ,(es-get-url))))
-         (url (cdr params))
+         (url (es--munge-url (cdr params)))
          (url-request-method (car params))
          (url-request-data (encode-coding-string
                             (buffer-substring-no-properties beg end) 'utf-8))

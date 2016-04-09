@@ -83,6 +83,9 @@ POST myindex/_search?pretty
 }
 ```
 
+If you do not want to specify `?pretty` every time, you can customize the
+`es-always-pretty-print` var (defaults to `nil`).
+
 #### Without parameters
 
 Without any parameters, you can specify a request:

@@ -72,7 +72,7 @@ Does not move the point."
   (let* ((params (or (es--find-params)
                      `(,(es-get-request-method) . ,(es-get-url))))
          (url-request-method (car params))
-         (url (cdr params))
+         (url (es--munge-url (cdr params)))
          (url-request-extra-headers
           '(("Content-Type" .
              "application/x-www-form-urlencoded; charset=UTF-8")))
