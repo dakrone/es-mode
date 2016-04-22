@@ -66,6 +66,14 @@
     :load
     (:min 0 :max :auto)))
 
+(defun es-cc--get-node-readable-id (node-id node-plist)
+  "Return a string suitable for a label for the node."
+  (-> node-plist
+      (plist-get node-id)
+      (plist-get :name)))
+
+(defun es-cc--get-node-pretty-string (node-plist))
+
 (defun es-cc--spark-v-for-metric (info-plist metric)
   "Given a `metric' keyword and info, return the spark-v string
   for all the nodes for that metric."
@@ -88,11 +96,14 @@
                     max)
                    ((eq max :auto)
                     (-max metric-of-nodes))
-                   (t 10))))
+                   (t 10)))
+         (labels (-map (lambda (id)
+                         (es-cc--get-node-readable-id id info-plist))
+                       node-ids)))
     (spark-v metric-of-nodes
              :min min-val
              :max max-val
-             :labels node-ids)))
+             :labels labels)))
 
 (defun es-cc--plist-merge (plist-a &rest plist-b)
   "Merge multiple plists into a single plist"
