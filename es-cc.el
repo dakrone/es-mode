@@ -152,15 +152,15 @@
         ;; Insert the new stats
         (let ((stats (es-cc--build-map-from-nodes-stats body-string)))
           (insert "* Node Information\n"
-                  (format-time-string "Last Updated: [%FT%T%z]")
+                  (format-time-string "Last Updated: [%FT%T%z]\n")
                   (format "Nodes: %s\n"(-map 'first (-partition 2 stats)))
-                  "* Node Memory"
+                  "\n* Node Memory"
                   (es-cc--spark-v-for-metric stats :mem)
-                  "* Node CPU"
+                  "\n* Node CPU"
                   (es-cc--spark-v-for-metric stats :cpu)
-                  "* Node Load"
-                  (es-cc--spark-v-for-metric stats :load)))
-        (read-only-mode 1)))))
+                  "\n* Node Load"
+                  (es-cc--spark-v-for-metric stats :load)))))
+    (read-only-mode 1)))
 
 (defun es-cc-get-nodes-stats (buffer-name)
   (url-retrieve (es-cc-get-nodes-stats-endpoint)
