@@ -7,7 +7,7 @@
 ;; URL: http://www.github.com/dakrone/es-mode
 ;; Version: 4.1.2
 ;; Keywords: elasticsearch
-;; Package-Requires: ((dash "2.11.0") (cl-lib "0.5"))
+;; Package-Requires: ((dash "2.11.0") (cl-lib "0.5") (spark "1.0"))
 
 ;; This file is not part of GNU Emacs.
 
