@@ -55,7 +55,7 @@
   :type 'string)
 
 (defun es-cc-get-nodes-stats-endpoint ()
-  (concat es-cc-endpoint "_nodes/stats"))
+  (concat es-cc-endpoint "/_nodes/stats"))
 
 (defvar es-cc--bounds-for-metric
   "Bounds for spark line for different metric names"
@@ -75,7 +75,6 @@
                                       (plist-get metric)))
                                 node-ids))
          (bounds (plist-get es-cc--bounds-for-metric metric))
-         (___ (message "Bounds %s metric: %s" bounds metric))
          (min (plist-get bounds :min))
          (min-val (cond
                    ((numberp min)
@@ -83,15 +82,13 @@
                    ((eq min :auto)
                     (-min metric-of-nodes))
                    (t 0)))
-         (_ (message "Min: %d" min-val))
          (max (plist-get bounds :max))
          (max-val (cond
                    ((numberp max)
                     max)
                    ((eq max :auto)
                     (-max metric-of-nodes))
-                   (t 10)))
-         (__ (message "Max: %d" max-val)))
+                   (t 10))))
     (spark-v metric-of-nodes
              :min min-val
              :max max-val
@@ -163,9 +160,10 @@
          (http-content-length url-http-content-length))
     (set-buffer
      (get-buffer-create results-buffer))
-    (message "Response: Status: %S Content-Type: %S (%s bytes)"
-             http-status-code http-content-type http-content-length)
-    (let ((buffer-read-only nil))
+    ;; (message "Response: Status: %S Content-Type: %S (%s bytes)"
+    ;;          http-status-code http-content-type http-content-length)
+    (let ((buffer-read-only nil)
+          (url es-cc-endpoint))
       ;; Clear everything
       (delete-region (point-min) (point-max))
       (if (or (equal 'connection-failed (cl-cadadr status))
@@ -176,17 +174,22 @@
         (fundamental-mode)
         ;; Turn on ES-CC mode
         (es-command-center-mode)
+        ;; Set a local var for the URL
+        (setq-local es-cc-endpoint url)
         ;; Insert the new stats
         (let ((stats (es-cc--build-map-from-nodes-stats body-string)))
-          (insert "* Node Information\n"
-                  (format-time-string "Last Updated: [%FT%T%z]\n")
-                  (format "Nodes: %s\n"(-map 'first (-partition 2 stats)))
-                  "\n* Node Memory"
-                  (es-cc--spark-v-for-metric stats :mem)
-                  "\n* Node CPU"
-                  (es-cc--spark-v-for-metric stats :cpu)
-                  "\n* Node Load"
-                  (es-cc--spark-v-for-metric stats :load)))))
+          (insert
+           "* Information\n"
+           (format "URL: <%s>\n" es-cc-endpoint)
+           (format-time-string "Last Updated: [%FT%T%z]\n")
+           "\n* Node Information\n"
+           (format "Nodes: %s\n"(-map 'first (-partition 2 stats)))
+           "\n* Node Memory"
+           (es-cc--spark-v-for-metric stats :mem)
+           "\n* Node CPU"
+           (es-cc--spark-v-for-metric stats :cpu)
+           "\n* Node Load"
+           (es-cc--spark-v-for-metric stats :load)))))
     (read-only-mode 1)))
 
 (defun es-cc-get-nodes-stats (buffer-name)
@@ -198,6 +201,7 @@
 (defun es-cc-refresh ()
   "Refresh the stats for the current buffer"
   (interactive)
+  (message "refreshing...")
   (es-cc-get-nodes-stats (buffer-name)))
 
 (defun es-command-center ()
@@ -206,6 +210,7 @@
   (let ((buffer-name (format "*ES-CC: %s*" es-cc-endpoint)))
     (set-buffer
      (get-buffer-create buffer-name))
+    (make-local-variable 'es-cc-endpoint)
     ;; Clear everything
     (let ((buffer-read-only nil))
       (delete-region (point-min) (point-max))
