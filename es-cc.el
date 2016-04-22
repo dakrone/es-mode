@@ -257,25 +257,5 @@
   :group 'es-cc
   :keymap es-command-center-mode-map)
 
-;; Testing niceties, will be removed before release
-(defun get-string-from-file (filePath)
-  "Return filePath's file content."
-  (with-temp-buffer
-    (insert-file-contents filePath)
-    (buffer-string)))
-
-(defvar example-2-node-stats
-  (get-string-from-file "example.json"))
-
-(defvar example-5-node-stats
-  (get-string-from-file "example5.json"))
-
-(defun example-single-node ()
-  (let* ((json-object-type 'plist)
-         (data (json-read-from-string example-node-stats))
-         (nodes (plist-get data :nodes))
-         (node-names (->> nodes (-partition 2) (-map 'first))))
-    (plist-get nodes (first node-names))))
-
 (provide 'es-cc)
 ;;; es-cc.el ends here
