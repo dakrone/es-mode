@@ -114,7 +114,8 @@
              :min min-val
              :max max-val
              :labels labels
-             :title title)))
+             :title title
+             :size 78)))
 
 (defun es-cc--plist-merge (plist-a &rest plist-b)
   "Merge multiple plists into a single plist"
