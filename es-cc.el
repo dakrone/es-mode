@@ -16,7 +16,8 @@
 
 ;;; Usage:
 
-;; TODO: document usage
+;; Invoke M-x es-command-center to open the command center, you can then hit 'g'
+;; to refresh the buffer manually
 
 ;;; License:
 
@@ -76,7 +77,6 @@
   (substring-no-properties (symbol-name symbol) 1))
 
 (defun es-cc--get-node-pretty-string (node-id nodes-plist)
-  (message "PL: %s" nodes-plist)
   (let* ((node-info (plist-get nodes-plist node-id))
          (name (plist-get node-info :name))
          (host (plist-get node-info :host)))
