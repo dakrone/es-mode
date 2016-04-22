@@ -61,11 +61,11 @@
 (defvar es-cc--bounds-for-metric
   "Bounds for spark line for different metric names"
   '(:mem
-    (:min 0 :max 100)
+    (:min 0 :max 100 :title "Memory Usage (%)")
     :cpu
-    (:min 0 :max 100)
+    (:min 0 :max 100 :title "CPU Usage (%)")
     :load
-    (:min 0 :max :auto)))
+    (:min 0 :max :auto :title "Load Average (1m)")))
 
 (defun es-cc--get-node-readable-id (node-id nodes-plist)
   "Return a string suitable for a label for the node."
@@ -108,11 +108,13 @@
                    (t 10)))
          (labels (-map (lambda (id)
                          (es-cc--get-node-readable-id id info-plist))
-                       node-ids)))
+                       node-ids))
+         (title (plist-get bounds :title)))
     (spark-v metric-of-nodes
              :min min-val
              :max max-val
-             :labels labels)))
+             :labels labels
+             :title title)))
 
 (defun es-cc--plist-merge (plist-a &rest plist-b)
   "Merge multiple plists into a single plist"
