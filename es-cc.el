@@ -152,18 +152,36 @@
           (progn
             (insert "ERROR: Could not connect to server.")
             (setq mode-name (format "ES-CC[failed]")))
+        ;; Turn on ES-CC mode
+        (es-command-center-mode)
+        ;; Insert the new stats
         (let ((stats (es-cc--build-map-from-nodes-stats body-string)))
+          (insert "* Node Information\n")
+          (insert (format "Nodes: %s\n"(-map 'first (-partition 2 stats))))
+          (insert "* Node Memory")
           (insert (es-cc--spark-v-for-metric stats :mem))
+          (insert "* Node CPU")
           (insert (es-cc--spark-v-for-metric stats :cpu))
-          (insert (es-cc--spark-v-for-metric stats :load)))
-        (setq mode-name "ES-CC[success]")))))
+          (insert "* Node Load")
+          (insert (es-cc--spark-v-for-metric stats :load)))))))
 
 (defun es-cc-get-nodes-stats ()
+  (interactive)
   (url-retrieve (es-cc-get-nodes-stats-endpoint)
                 'es-cc--process-nodes-stats
                 (list (format "*ES-CC: %s*" es-cc-endpoint))
                 t t))
 
+(defvar es-command-center-mode-map (make-sparse-keymap)
+  "Keymap used for `es-command-center-mode'.")
+
+(define-minor-mode es-command-center-mode
+  "Docstring"
+  :init-value nil
+  :lighter "ES-CC"
+  :group 'es-cc
+  :keymap es-command-center-mode-map
+  )
 
 ;; Testing niceties, will be removed before release
 (defun get-string-from-file (filePath)
