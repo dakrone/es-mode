@@ -57,6 +57,15 @@
 (defun es-cc-get-nodes-stats-endpoint ()
   (concat es-cc-endpoint "_nodes/stats"))
 
+(defvar es-cc--bounds-for-metric
+  "Bounds for spark line for different metric names"
+  '(:mem
+    (:min 0 :max 100)
+    :cpu
+    (:min 0 :max 100)
+    :load
+    (:min 0 :max :auto)))
+
 (defun es-cc--spark-v-for-metric (info-plist metric)
   "Given a `metric' keyword and info, return the spark-v string
   for all the nodes for that metric."
@@ -64,10 +73,28 @@
          (metric-of-nodes (-map (lambda (id)
                                   (-> (plist-get info-plist id)
                                       (plist-get metric)))
-                                node-ids)))
+                                node-ids))
+         (bounds (plist-get es-cc--bounds-for-metric metric))
+         (___ (message "Bounds %s metric: %s" bounds metric))
+         (min (plist-get bounds :min))
+         (min-val (cond
+                   ((numberp min)
+                    min)
+                   ((eq min :auto)
+                    (-min metric-of-nodes))
+                   (t 0)))
+         (_ (message "Min: %d" min-val))
+         (max (plist-get bounds :max))
+         (max-val (cond
+                   ((numberp max)
+                    max)
+                   ((eq max :auto)
+                    (-max metric-of-nodes))
+                   (t 10)))
+         (__ (message "Max: %d" max-val)))
     (spark-v metric-of-nodes
-             :min 0
-             :max 100
+             :min min-val
+             :max max-val
              :labels node-ids)))
 
 ;; TODO: rename this
@@ -198,8 +225,7 @@
   :init-value nil
   :lighter "ES-CC"
   :group 'es-cc
-  :keymap es-command-center-mode-map
-  )
+  :keymap es-command-center-mode-map)
 
 ;; Testing niceties, will be removed before release
 (defun get-string-from-file (filePath)
