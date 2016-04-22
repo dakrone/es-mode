@@ -54,12 +54,6 @@
   :group 'es-cc
   :type 'string)
 
-(defun es-cc-spark-heap (heap-pct)
-  (spark-v '(85)
-           :min 0
-           :max 100
-           :labels '("node1")))
-
 (defun es-cc-get-nodes-stats-endpoint ()
   (concat es-cc-endpoint "_nodes/stats"))
 
