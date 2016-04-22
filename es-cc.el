@@ -94,8 +94,8 @@
              :max max-val
              :labels node-ids)))
 
-;; TODO: rename this
-(defun m/merge (plist-a &rest plist-b)
+(defun es-cc--plist-merge (plist-a &rest plist-b)
+  "Merge multiple plists into a single plist"
   (-reduce-from
    (lambda (plist-a plist-b)
      (->> (-partition 2 plist-b)
@@ -145,7 +145,7 @@
          (nodes (plist-get data :nodes))
          (node-names (->> nodes (-partition 2) (-map 'first)))
          (node-infos (->> nodes (-partition 2) (-map 'es-cc--node-to-info))))
-    (-reduce 'm/merge node-infos)))
+    (-reduce 'es-cc--plist-merge node-infos)))
 
 (defun es-cc--process-nodes-stats (status &optional results-buffer)
   (let* ((http-results-buffer (current-buffer))
