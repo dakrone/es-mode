@@ -250,6 +250,8 @@
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "g") 'es-cc-refresh)
     (define-key map (kbd "q") 'bury-buffer)
+    (define-key map (kbd "p") 'previous-line)
+    (define-key map (kbd "n") 'next-line)
     map)
   "Keymap used for `es-command-center-mode'.")
 
