@@ -152,27 +152,51 @@
           (progn
             (insert "ERROR: Could not connect to server.")
             (setq mode-name (format "ES-CC[failed]")))
+        (fundamental-mode)
         ;; Turn on ES-CC mode
         (es-command-center-mode)
         ;; Insert the new stats
         (let ((stats (es-cc--build-map-from-nodes-stats body-string)))
-          (insert "* Node Information\n")
-          (insert (format "Nodes: %s\n"(-map 'first (-partition 2 stats))))
-          (insert "* Node Memory")
-          (insert (es-cc--spark-v-for-metric stats :mem))
-          (insert "* Node CPU")
-          (insert (es-cc--spark-v-for-metric stats :cpu))
-          (insert "* Node Load")
-          (insert (es-cc--spark-v-for-metric stats :load)))))))
+          (insert "* Node Information\n"
+                  (format-time-string "Last Updated: [%FT%T%z]")
+                  (format "Nodes: %s\n"(-map 'first (-partition 2 stats)))
+                  "* Node Memory"
+                  (es-cc--spark-v-for-metric stats :mem)
+                  "* Node CPU"
+                  (es-cc--spark-v-for-metric stats :cpu)
+                  "* Node Load"
+                  (es-cc--spark-v-for-metric stats :load)))
+        (read-only-mode 1)))))
 
-(defun es-cc-get-nodes-stats ()
-  (interactive)
+(defun es-cc-get-nodes-stats (buffer-name)
   (url-retrieve (es-cc-get-nodes-stats-endpoint)
                 'es-cc--process-nodes-stats
-                (list (format "*ES-CC: %s*" es-cc-endpoint))
+                (list buffer-name)
                 t t))
 
-(defvar es-command-center-mode-map (make-sparse-keymap)
+(defun es-cc-refresh ()
+  "Refresh the stats for the current buffer"
+  (interactive)
+  (es-cc-get-nodes-stats (buffer-name)))
+
+(defun es-command-center ()
+  "Open the Elasticsearch Command Center"
+  (interactive)
+  (let ((buffer-name (format "*ES-CC: %s*" es-cc-endpoint)))
+    (set-buffer
+     (get-buffer-create buffer-name))
+    ;; Clear everything
+    (let ((buffer-read-only nil))
+      (delete-region (point-min) (point-max))
+      (insert (format "Fetching stats [%s]..." es-cc-endpoint)))
+    (set-window-buffer nil buffer-name)
+    (es-cc-get-nodes-stats buffer-name)))
+
+(defvar es-command-center-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "g") 'es-cc-refresh)
+    (define-key map (kbd "q") 'bury-buffer)
+    map)
   "Keymap used for `es-command-center-mode'.")
 
 (define-minor-mode es-command-center-mode
