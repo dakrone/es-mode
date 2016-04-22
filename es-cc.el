@@ -66,13 +66,22 @@
     :load
     (:min 0 :max :auto)))
 
-(defun es-cc--get-node-readable-id (node-id node-plist)
+(defun es-cc--get-node-readable-id (node-id nodes-plist)
   "Return a string suitable for a label for the node."
-  (-> node-plist
+  (-> nodes-plist
       (plist-get node-id)
       (plist-get :name)))
 
-(defun es-cc--get-node-pretty-string (node-plist))
+(defun es-cc--drop-colon (symbol)
+  (substring-no-properties (symbol-name symbol) 1))
+
+(defun es-cc--get-node-pretty-string (node-id nodes-plist)
+  (message "PL: %s" nodes-plist)
+  (let* ((node-info (plist-get nodes-plist node-id))
+         (name (plist-get node-info :name))
+         (host (plist-get node-info :host)))
+    (format "name: %s\nhost: %s\n  id: %s\n"
+            name host (es-cc--drop-colon node-id))))
 
 (defun es-cc--spark-v-for-metric (info-plist metric)
   "Given a `metric' keyword and info, return the spark-v string
@@ -143,7 +152,8 @@
                            (plist-get :load_average)
                            (plist-get :1m)))))
     (plist-put '() node-id
-               (-> (plist-put '() :name name)
+               (-> '()
+                   (plist-put :name name)
                    (plist-put :host host)
                    (plist-put :cpu cpu-pct)
                    (plist-put :mem mem-pct)
@@ -194,7 +204,11 @@
            (format "URL: <%s>\n" es-cc-endpoint)
            (format-time-string "Last Updated: [%FT%T%z]\n")
            "\n* Node Information\n"
-           (format "Nodes: %s\n"(-map 'first (-partition 2 stats)))
+           (-reduce (lambda (x y) (concat x "\n" y))
+                    (-map (lambda (tuple)
+                            (es-cc--get-node-pretty-string
+                             (first tuple) stats))
+                          (-partition 2 stats)))
            "\n* Node Memory"
            (es-cc--spark-v-for-metric stats :mem)
            "\n* Node CPU"
