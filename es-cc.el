@@ -56,6 +56,7 @@
   :type 'string)
 
 (defun es-cc-get-nodes-stats-endpoint ()
+  "Return the nodes stats API endpoint"
   (concat es-cc-endpoint "/_nodes/stats"))
 
 (defvar es-cc--bounds-for-metric
@@ -74,9 +75,12 @@
       (plist-get :name)))
 
 (defun es-cc--drop-colon (symbol)
+  "Take a symbol like `:foo' and return a string like \"foo\"."
   (substring-no-properties (symbol-name symbol) 1))
 
 (defun es-cc--get-node-pretty-string (node-id nodes-plist)
+  "Given a `node-id' and the nodes stats plist, return a nice
+multi-line string for the node."
   (let* ((node-info (plist-get nodes-plist node-id))
          (name (plist-get node-info :name))
          (host (plist-get node-info :host)))
@@ -85,7 +89,7 @@
 
 (defun es-cc--spark-v-for-metric (info-plist metric)
   "Given a `metric' keyword and info, return the spark-v string
-  for all the nodes for that metric."
+for all the nodes for that metric."
   (let* ((node-ids (-map 'first (-partition 2 info-plist)))
          (metric-of-nodes (-map (lambda (id)
                                   (-> (plist-get info-plist id)
