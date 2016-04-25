@@ -60,13 +60,13 @@
   (concat es-cc-endpoint "/_nodes/stats"))
 
 (defvar es-cc--bounds-for-metric
-  "Bounds for spark line for different metric names"
   '(:mem
     (:min 0 :max 100 :title "Memory Usage (%)")
     :cpu
     (:min 0 :max 100 :title "CPU Usage (%)")
     :load
-    (:min 0 :max :auto :title "Load Average (1m)")))
+    (:min 0 :max :auto :title "Load Average (1m)"))
+    "Bounds for spark line for different metric names")
 
 (defun es-cc--get-node-readable-id (node-id nodes-plist)
   "Return a string suitable for a label for the node."
