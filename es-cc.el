@@ -66,7 +66,7 @@
     (:min 0 :max 100 :title "CPU Usage (%)")
     :load
     (:min 0 :max :auto :title "Load Average (1m)"))
-    "Bounds for spark line for different metric names")
+  "Bounds for spark line for different metric names")
 
 (defun es-cc--get-node-readable-id (node-id nodes-plist)
   "Return a string suitable for a label for the node."
@@ -191,6 +191,7 @@ for all the nodes for that metric."
     ;; (message "Response: Status: %S Content-Type: %S (%s bytes)"
     ;;          http-status-code http-content-type http-content-length)
     (let ((buffer-read-only nil)
+          (current-point (point))
           (url es-cc-endpoint))
       ;; Clear everything
       (delete-region (point-min) (point-max))
@@ -221,7 +222,10 @@ for all the nodes for that metric."
            "\n* Node CPU"
            (es-cc--spark-v-for-metric stats :cpu)
            "\n* Node Load"
-           (es-cc--spark-v-for-metric stats :load)))))
+           (es-cc--spark-v-for-metric stats :load)
+           "\n* Index Information"
+           "\n* Shard Information")))
+      (goto-char current-point))
     (read-only-mode 1)))
 
 (defun es-cc-get-nodes-stats (buffer-name)
