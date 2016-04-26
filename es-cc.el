@@ -336,7 +336,13 @@ for all the nodes for that metric."
            "\n\n"
            (propertize "* Node Load" 'face 'outline-1)
            (es-cc--spark-v-for-metric stats :load)
-           "\n"
+           (-reduce (lambda (x y) (concat x "\n" y))
+                    (-map (lambda (tuple)
+                            (es-cc--spark-h-for-historical-metric
+                             max-node-len
+                             (first tuple) stats :load))
+                          (-partition 2 stats)))
+           "\n\n"
            (propertize "* Index Information" 'face 'outline-1)
            "\n"
            es-cc--indices-health-string
