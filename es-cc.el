@@ -268,12 +268,6 @@ for all the nodes for that metric."
 
 (defun es-cc--process-nodes-stats (status &optional results-buffer)
   (let* ((http-results-buffer (current-buffer))
-         (body-string (with-temp-buffer
-                        (url-insert http-results-buffer)
-                        (goto-char (point-min))
-                        (search-forward "{" (point-max))
-                        (buffer-substring-no-properties
-                         (- (point) 1) (point-max))))
          (http-status-code url-http-response-status)
          (http-content-type url-http-content-type)
          (http-content-length url-http-content-length))
@@ -297,7 +291,13 @@ for all the nodes for that metric."
         ;; Set a local var for the URL
         (setq-local es-cc-endpoint url)
         ;; Insert the new stats
-        (let* ((stats (es-cc--build-map-from-nodes-stats body-string))
+        (let* ((body-string (with-temp-buffer
+                              (url-insert http-results-buffer)
+                              (goto-char (point-min))
+                              (search-forward "{" (point-max))
+                              (buffer-substring-no-properties
+                               (- (point) 1) (point-max))))
+               (stats (es-cc--build-map-from-nodes-stats body-string))
                (node-ids (-map 'first (-partition 2 stats)))
                (max-node-len
                 (-reduce 'max
@@ -438,11 +438,12 @@ for all the nodes for that metric."
   (save-window-excursion
     (save-excursion
       (let ((buffer-name (format "*ES-CC: %s*" es-cc-endpoint)))
-        (set-buffer buffer-name)
-        (es-cc-refresh)
-        (setq es-cc--refresh-timer
-              (run-at-time (format "%d sec" es-cc-refresh-interval)
-                           nil 'es-cc--periodic-refresh))))))
+        (when (get-buffer buffer-name)
+          (set-buffer buffer-name)
+          (es-cc-refresh)
+          (setq es-cc--refresh-timer
+                (run-at-time (format "%d sec" es-cc-refresh-interval)
+                             nil 'es-cc--periodic-refresh)))))))
 
 (defun es-command-center ()
   "Open the Elasticsearch Command Center"
