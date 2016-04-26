@@ -43,11 +43,13 @@ automatically load..
   queries
 - Better indenting than sh-mode (indents like js-mode)
 - Sending the queries as a http-request to Elasticsearch endpoints.
-- navigate via goto-(next|previous)-request with `C-c C-n` and `C-c C-p` (when
+- Navigate via goto-(next|previous)-request with `C-c C-n` and `C-c C-p` (when
   using parameters)
-- hooks for responses, see `es-response-success-functions` and
+- An Elasticsearch Command Center mode for monitoring clusters
+- Hooks for responses, see `es-response-success-functions` and
   `es-response-failure-functions`
-- pass the resulting JSON through [jq](https://stedolan.github.io/jq/) to return
+- Support for "es" mode blocks in org-mode
+- Pass the resulting JSON through [jq](https://stedolan.github.io/jq/) to return
   only the values you want in org-mode
 
 ### Example
@@ -309,6 +311,20 @@ es-mode uses `jq` in the `PATH`, however, if you want to specify an absolute
 path you can customize the `es-jq-path` var as you like.
 
 jq will only be run if the response is an HTTP 20[0-9].
+
+### Elasticsearch Command Center
+
+`es-mode` includes a mode called the "Elasticsearch Command Center", which is
+meant for monitoring your cluster. This provides a graphical representation of
+what's happening in the cluster.
+
+To invoke it, simply do `M-x es-command-center`. ES-CC will automatically
+refresh at `es-cc-refresh-interval` seconds, check out `M-x customize-group
+es-cc` to see all of the customization options.
+
+Here's a screenshot of what it looks like:
+
+![picture of es-command-center](http://writequit.org/files/es-command-center.png)
 
 ### Feedback
 
