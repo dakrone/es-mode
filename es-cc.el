@@ -282,9 +282,7 @@ for all the nodes for that metric."
       (delete-region (point-min) (point-max))
       (if (or (equal 'connection-failed (cl-cadadr status))
               (not (numberp http-status-code)))
-          (progn
-            (insert "ERROR: Could not connect to server.")
-            (setq mode-name (format "ES-CC[failed]")))
+          (insert "ERROR: Could not connect to server.")
         (fundamental-mode)
         ;; Turn on ES-CC mode
         (es-command-center-mode)
