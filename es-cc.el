@@ -443,6 +443,23 @@ for all the nodes for that metric."
                 (run-at-time (format "%d sec" es-cc-refresh-interval)
                              nil 'es-cc--periodic-refresh)))))))
 
+(defvar es-command-center-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "g") 'es-cc-refresh)
+    (define-key map (kbd "q") 'kill-buffer)
+    (define-key map (kbd "p") 'previous-line)
+    (define-key map (kbd "n") 'next-line)
+    map)
+  "Keymap used for `es-command-center-mode'.")
+
+(define-minor-mode es-command-center-mode
+  "Docstring"
+  :init-value nil
+  :lighter "ES-CC"
+  :group 'es-cc
+  :keymap es-command-center-mode-map)
+
+;;;###autoload
 (defun es-command-center ()
   "Open the Elasticsearch Command Center"
   (interactive)
@@ -464,22 +481,6 @@ for all the nodes for that metric."
           (run-at-time (format "%d sec" es-cc-refresh-interval)
                        nil 'es-cc--periodic-refresh))
     (es-cc-refresh)))
-
-(defvar es-command-center-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "g") 'es-cc-refresh)
-    (define-key map (kbd "q") 'kill-buffer)
-    (define-key map (kbd "p") 'previous-line)
-    (define-key map (kbd "n") 'next-line)
-    map)
-  "Keymap used for `es-command-center-mode'.")
-
-(define-minor-mode es-command-center-mode
-  "Docstring"
-  :init-value nil
-  :lighter "ES-CC"
-  :group 'es-cc
-  :keymap es-command-center-mode-map)
 
 (provide 'es-cc)
 ;;; es-cc.el ends here
