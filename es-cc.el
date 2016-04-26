@@ -55,6 +55,11 @@
   :group 'es-cc
   :type 'string)
 
+(defcustom es-cc-metric-history 50
+  "Number of historical metrics to keep for graphs"
+  :group 'es-cc
+  :type 'integer)
+
 (defun es-cc-get-nodes-stats-endpoint ()
   "Return the nodes stats API endpoint"
   (concat es-cc-endpoint "/_nodes/stats"))
@@ -67,6 +72,9 @@
     :load
     (:min 0 :max :auto :title "Load Average (1m)"))
   "Bounds for spark line for different metric names")
+
+(defvar es-cc--node-history '()
+  "Var used to store node cpu/mem/load history")
 
 (defun es-cc--get-node-readable-id (node-id nodes-plist)
   "Return a string suitable for a label for the node."
@@ -120,6 +128,16 @@ for all the nodes for that metric."
              :labels labels
              :title title
              :size 78)))
+
+(defun es-cc--spark-h-for-historical-metric (node-id info-plist metric)
+  (let ((stats (-> es-cc--node-history
+                   (plist-get node-id)
+                   (plist-get metric))))
+    (format "%s %s"
+            (es-cc--get-node-readable-id node-id info-plist)
+            (spark (reverse stats)
+                   :min 0
+                   :max 100))))
 
 (defun es-cc--plist-merge (plist-a &rest plist-b)
   "Merge multiple plists into a single plist"
@@ -175,6 +193,42 @@ for all the nodes for that metric."
          (node-infos (->> nodes (-partition 2) (-map 'es-cc--node-to-info))))
     (-reduce 'es-cc--plist-merge node-infos)))
 
+;; TODO: use this
+(defvar es-cc--history-tracked-stats '(:mem :cpu :load))
+
+(defun es-cc--update-history-from-stats-for-single-node (node-id new-info)
+  (let* ((current-history (plist-get es-cc--node-history node-id))
+         (old-mem (-take es-cc-metric-history
+                         (plist-get current-history :mem)))
+         (new-mem (cons (plist-get new-info :mem) old-mem))
+         (old-cpu (-take es-cc-metric-history
+                         (plist-get current-history :cpu)))
+         (new-cpu (cons (plist-get new-info :cpu) old-cpu))
+         (old-load (-take es-cc-metric-history
+                          (plist-get current-history :load)))
+         (new-load (cons (plist-get new-info :load) old-load))
+         (new-history (-> nil
+                          (plist-put :mem new-mem)
+                          (plist-put :cpu new-cpu)
+                          (plist-put :load new-load))))
+    new-history))
+
+(defun es-cc--update-history-from-stats (nodes-infos-plist)
+  "Given the new stats, update the history with the new information"
+  (let* ((node-names (->> nodes-infos-plist (-partition 2) (-map 'first)))
+         (histories
+          (-map
+           (lambda (id)
+             (plist-put nil
+                        id
+                        (es-cc--update-history-from-stats-for-single-node
+                         id (plist-get nodes-infos-plist id))))
+           node-names))
+         (new-history (-reduce 'es-cc--plist-merge histories)))
+    ;;(message "node names %s, new-history: %s" node-names new-history)
+    ;; Actually update history
+    (setq es-cc--node-history new-history)))
+
 (defun es-cc--process-nodes-stats (status &optional results-buffer)
   (let* ((http-results-buffer (current-buffer))
          (body-string (with-temp-buffer
@@ -207,10 +261,12 @@ for all the nodes for that metric."
         (setq-local es-cc-endpoint url)
         ;; Insert the new stats
         (let ((stats (es-cc--build-map-from-nodes-stats body-string)))
+          (es-cc--update-history-from-stats stats)
           (insert
            "* Information\n"
            (format "URL: <%s>\n" es-cc-endpoint)
            (format-time-string "Last Updated: [%FT%T%z]\n")
+           "\n* Cluster Information\n"
            "\n* Node Information\n"
            (-reduce (lambda (x y) (concat x "\n" y))
                     (-map (lambda (tuple)
@@ -219,12 +275,22 @@ for all the nodes for that metric."
                           (-partition 2 stats)))
            "\n* Node Memory"
            (es-cc--spark-v-for-metric stats :mem)
+           (-reduce (lambda (x y) (concat x "\n" y))
+                    (-map (lambda (tuple)
+                            (es-cc--spark-h-for-historical-metric
+                             (first tuple) stats :mem))
+                          (-partition 2 stats)))
            "\n* Node CPU"
            (es-cc--spark-v-for-metric stats :cpu)
+           (-reduce (lambda (x y) (concat x "\n" y))
+                    (-map (lambda (tuple)
+                            (es-cc--spark-h-for-historical-metric
+                             (first tuple) stats :cpu))
+                          (-partition 2 stats)))
            "\n* Node Load"
            (es-cc--spark-v-for-metric stats :load)
-           "\n* Index Information"
-           "\n* Shard Information")))
+           "\n* Index Information\n"
+           "\n* Shard Information\n")))
       (goto-char current-point))
     (read-only-mode 1)))
 
