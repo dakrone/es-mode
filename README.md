@@ -324,7 +324,7 @@ es-cc` to see all of the customization options.
 
 Here's a screenshot of what it looks like:
 
-![picture of es-command-center](http://writequit.org/files/es-command-center.png)
+![picture of es-command-center](http://writequit.org/images/es-command-center.png)
 
 ### Feedback
 
