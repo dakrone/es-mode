@@ -74,7 +74,7 @@
   (concat
    es-cc-endpoint
    "/_cat/health?v&h=cluster,status,node.total,node.data,"
-   "shards,unassign,asp"))
+   "shards,unassign,active_shards_percent"))
 
 (defun es-cc-get-indices-endpoint ()
   "Return the indices API endpoint"
