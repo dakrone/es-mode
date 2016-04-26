@@ -301,7 +301,7 @@ for all the nodes for that metric."
           (insert
            (propertize "* Information" 'face 'outline-1)
            "\n"
-           (format "URL: <%s>\n" es-cc-endpoint)
+           (format "URL: <%s>\n" (propertize es-cc-endpoint 'face 'underline))
            (format-time-string "Last Updated: [%FT%T%z]\n")
            "\n"
            (propertize "* Cluster Information" 'face 'outline-1)
