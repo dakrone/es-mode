@@ -280,12 +280,12 @@ for all the nodes for that metric."
           (url es-cc-endpoint))
       ;; Clear everything
       (delete-region (point-min) (point-max))
+      (fundamental-mode)
+      ;; Turn on ES-CC mode
+      (es-command-center-mode)
       (if (or (equal 'connection-failed (cl-cadadr status))
               (not (numberp http-status-code)))
           (insert "ERROR: Could not connect to server.")
-        (fundamental-mode)
-        ;; Turn on ES-CC mode
-        (es-command-center-mode)
         ;; Set a local var for the URL
         (setq-local es-cc-endpoint url)
         ;; Insert the new stats
