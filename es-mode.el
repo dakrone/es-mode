@@ -694,7 +694,10 @@ the buffer is executed from top to bottom."
   (set-syntax-table es-mode-syntax-table)
   ;; Use es-mode font-lock
   (setq font-lock-defaults '(es-font-lock-keywords))
-  (make-local-variable 'es-result-response))
+  (make-local-variable 'es-result-response)
+  ;; Also set comment chars in results mode
+  (setq-local comment-start "// ")
+  (setq-local comment-start-skip "//+[\t ]*"))
 
 (defun es-indent-line ()
   "Indent current line as ES code. Uses the same indention as js-mode."
