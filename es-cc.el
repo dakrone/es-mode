@@ -470,7 +470,7 @@ for all the nodes for that metric."
 (defvar es-command-center-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "g") 'es-cc-refresh)
-    (define-key map (kbd "q") 'bury-buffer)
+    (define-key map (kbd "q") 'kill-buffer)
     (define-key map (kbd "p") 'previous-line)
     (define-key map (kbd "n") 'next-line)
     map)
