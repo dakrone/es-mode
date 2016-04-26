@@ -55,8 +55,13 @@
   :group 'es-cc
   :type 'string)
 
-(defcustom es-cc-metric-history 50
+(defcustom es-cc-metric-history 55
   "Number of historical metrics to keep for graphs"
+  :group 'es-cc
+  :type 'integer)
+
+(defcustom es-cc-refresh-interval 5
+  "Refresh the command center buffer in this many seconds."
   :group 'es-cc
   :type 'integer)
 
@@ -89,6 +94,9 @@
     :load
     (:min 0 :max :auto :title "Load Average (1m)"))
   "Bounds for spark line for different metric names")
+
+(defvar es-cc--refresh-timer nil
+  "Timer value for automatic refresh")
 
 (defvar es-cc--node-history '()
   "Var used to store node cpu/mem/load history")
@@ -424,6 +432,18 @@ for all the nodes for that metric."
   (es-cc-get-shards-health (buffer-name))
   (es-cc-get-nodes-stats (buffer-name)))
 
+(defun es-cc--periodic-refresh ()
+  "Return a function for periodic refresh of command center
+  buffer"
+  (save-window-excursion
+    (save-excursion
+      (let ((buffer-name (format "*ES-CC: %s*" es-cc-endpoint)))
+        (set-buffer buffer-name)
+        (es-cc-refresh)
+        (setq es-cc--refresh-timer
+              (run-at-time (format "%d sec" es-cc-refresh-interval)
+                           nil 'es-cc--periodic-refresh))))))
+
 (defun es-command-center ()
   "Open the Elasticsearch Command Center"
   (interactive)
@@ -435,11 +455,15 @@ for all the nodes for that metric."
     (make-local-variable 'es-cc--cluster-health-string)
     (make-local-variable 'es-cc--indices-health-string)
     (make-local-variable 'es-cc--shards-health-string)
+    (make-local-variable 'es-cc--refresh-timer)
     ;; Clear everything
     (let ((buffer-read-only nil))
       (delete-region (point-min) (point-max))
       (insert (format "Fetching stats [%s]..." es-cc-endpoint)))
     (set-window-buffer nil buffer-name)
+    (setq es-cc--refresh-timer
+          (run-at-time (format "%d sec" es-cc-refresh-interval)
+                       nil 'es-cc--periodic-refresh))
     (es-cc-refresh)))
 
 (defvar es-command-center-mode-map
