@@ -173,9 +173,11 @@ for all the nodes for that metric."
         (format-str (concat "%0" (number-to-string max-len) "s %s")))
     (format format-str
             (es-cc--get-node-readable-id node-id info-plist)
-            (spark (reverse stats)
-                   :min 0
-                   :max 100))))
+            (if (sequencep stats)
+                (spark (reverse stats)
+                       :min 0
+                       :max 100)
+              "unable to load historical information"))))
 
 (defun es-cc--plist-merge (plist-a &rest plist-b)
   "Merge multiple plists into a single plist"
@@ -207,13 +209,21 @@ for all the nodes for that metric."
          (cpu-pct (or (-> node-stat
                           (plist-get :os)
                           (plist-get :cpu_percent))
-                      (-> cpu-stats (plist-get :percent))))
-         (load-avg (or (-> node-stat
-                           (plist-get :os)
-                           (plist-get :load_average))
-                       (-> cpu-stats
-                           (plist-get :load_average)
-                           (plist-get :1m)))))
+                      (-> cpu-stats (plist-get :percent))
+                      ;; 1.7.x support
+                      (- 100 (-> cpu-stats (plist-get :idle)))))
+         (maybe-load-avg (or (-> node-stat
+                                 (plist-get :os)
+                                 (plist-get :load_average))
+                             (-> cpu-stats
+                                 (plist-get :load_average)
+                                 (plist-get :1m))))
+         (load-avg (if (sequencep maybe-load-avg)
+                       ;; 1.7.x support
+                       (elt load-avg 0)
+                     maybe-load-avg)))
+    ;; (message "NAME: %s, CPU: %s, MEM: %s, LOAD %s"
+    ;;          name cpu-pct mem-pct load-avg)
     (plist-put '() node-id
                (-> '()
                    (plist-put :name name)
