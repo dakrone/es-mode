@@ -220,7 +220,7 @@ for all the nodes for that metric."
                                  (plist-get :1m))))
          (load-avg (if (sequencep maybe-load-avg)
                        ;; 1.7.x support
-                       (elt load-avg 0)
+                       (elt maybe-load-avg 0)
                      maybe-load-avg)))
     ;; (message "NAME: %s, CPU: %s, MEM: %s, LOAD %s"
     ;;          name cpu-pct mem-pct load-avg)
