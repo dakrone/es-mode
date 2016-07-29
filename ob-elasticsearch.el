@@ -137,7 +137,7 @@ to do that."
           (delete-region (point-min) (point-max))
           (if (string-suffix-p ".org" file t)
             (progn (require 'org-json)
-                   (insert (org-json-decode (json-read-from-string contents) 1)))
+                   (insert (org-json-decode (json-read-from-string output) 1)))
             (insert output))
           (save-buffer))
         output))))
