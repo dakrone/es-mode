@@ -121,7 +121,8 @@ to do that."
     (let ((output (when mark-active
                     (es-org-execute-request
                      (cdr (assoc :jq params))
-                     (cdr (assoc :tablify params))))))
+                     (cdr (assoc :tablify params)))))
+          (file (cdr (assoc :file params))))
       (ignore-errors
         (while (es-goto-next-request)
           (es-mark-request-body)
@@ -131,7 +132,15 @@ to do that."
                         (es-org-execute-request
                          (cdr (assoc :jq params))
                          (cdr (assoc :tablify params)))))))
-      output)))
+      (if file
+        (with-current-buffer (find-file-noselect file)
+          (delete-region (point-min) (point-max))
+          (if (string-suffix-p ".org" file t)
+            (progn (require 'org-json)
+                   (insert (org-json-decode (json-read-from-string contents) 1)))
+            (insert output))
+          (save-buffer))
+        output))))
 
 (provide 'ob-elasticsearch)
 ;;; ob-elasticsearch.el ends here
