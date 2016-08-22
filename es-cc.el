@@ -67,24 +67,38 @@
 
 (defun es-cc-get-nodes-stats-endpoint ()
   "Return the nodes stats API endpoint"
-  (concat es-cc-endpoint "/_nodes/stats"))
+  (concat es-cc-endpoint
+          (if (s-ends-with-p "/" es-cc-endpoint)
+              ""
+            "/")
+          "_nodes/stats"))
 
 (defun es-cc-get-health-endpoint ()
   "Return the health API endpoint"
   (concat
    es-cc-endpoint
-   "/_cat/health?v&h=cluster,status,node.total,node.data,"
+   (if (s-ends-with-p "/" es-cc-endpoint)
+       ""
+     "/")
+   "_cat/health?v&h=cluster,status,node.total,node.data,"
    "shards,unassign,active_shards_percent"))
 
 (defun es-cc-get-indices-endpoint ()
   "Return the indices API endpoint"
   (concat
    es-cc-endpoint
-   "/_cat/indices?v&h=index,health,pri,rep,docs.count,store.size"))
+   (if (s-ends-with-p "/" es-cc-endpoint)
+       ""
+     "/")
+   "_cat/indices?v&h=index,health,pri,rep,docs.count,store.size"))
 
 (defun es-cc-get-shards-endpoint ()
   "Return the indices API endpoint"
-  (concat es-cc-endpoint "/_cat/shards?v"))
+  (concat es-cc-endpoint
+          (if (s-ends-with-p "/" es-cc-endpoint)
+              ""
+            "/")
+          "_cat/shards?v"))
 
 (defvar es-cc--bounds-for-metric
   '(:mem
@@ -287,7 +301,7 @@ for all the nodes for that metric."
     ;;          http-status-code http-content-type http-content-length)
     (let ((buffer-read-only nil)
           (current-point (point))
-          (url es-cc-endpoint))
+          (temp-url es-cc-endpoint))
       ;; Clear everything
       (delete-region (point-min) (point-max))
       (fundamental-mode)
@@ -297,7 +311,7 @@ for all the nodes for that metric."
               (not (numberp http-status-code)))
           (insert "ERROR: Could not connect to server.")
         ;; Set a local var for the URL
-        (setq-local es-cc-endpoint url)
+        (setq-local es-cc-endpoint temp-url)
         ;; Insert the new stats
         (let* ((body-string (with-temp-buffer
                               (url-insert http-results-buffer)
