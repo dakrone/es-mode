@@ -607,49 +607,20 @@ the end."
 
 (defun es-goto-previous-request ()
   "Advance the point to the previous parameter declaration, if
-available. Returns true if one was found, nil otherwise."
+available. Returns truthy if one was found, nil otherwise."
   (interactive)
-  (forward-line -1)
-  (es-mark-request-body)
-  (deactivate-mark)
-  (let ((found? (ignore-errors
-                  (re-search-backward
-                   (concat
-                    "}\\\|"
-                    (concat
-                     "^" (regexp-opt es-http-builtins-all) " .*$"))))))
-    (es-mark-request-body)
-    (deactivate-mark)
-    (forward-line -1)
-    (beginning-of-line)
-    (unless (looking-at es--method-url-regexp)
-      (ignore-errors
-        (search-forward "{")
-        (backward-char)))
-    (not (not found?))))
+  (re-search-backward es--method-url-regexp (point-min) t))
 
 (defun es-goto-next-request ()
   "Advance the point to the next parameter declaration, if
-available. Returns true if one was found, nil otherwise."
+available. Returns truthy if one was found, nil otherwise."
   (interactive)
-  (forward-line 1)
-  (es-mark-request-body)
-  (when (looking-at "{")
-    (forward-sexp))
-  (deactivate-mark)
-  (let ((found? (ignore-errors
-                  (re-search-forward
-                   (concat
-                    "{\\\|"
-                    (concat
-                     "^" (regexp-opt es-http-builtins-all) " .*$"))))))
-    (beginning-of-line)
-    (unless (looking-at es--method-url-regexp)
-      (ignore-errors
-        (search-forward "{")
-        (backward-char)))
-    ;; Coerce to `t' or `nil'
-    (not (not found?))))
+  ;; Go forward 1 char so being at a request doesn't keep the cursor at the
+  ;; request permanently.
+  (forward-char 1)
+  (prog1
+      (re-search-forward es--method-url-regexp (point-max) t)
+    (beginning-of-line)))
 
 (defmacro es-save-everything (&rest args)
   `(,(if (fboundp
