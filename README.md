@@ -52,6 +52,15 @@ automatically load..
 - Pass the resulting JSON through [jq](https://stedolan.github.io/jq/) to return
   only the values you want in org-mode
 
+#### Using hide-show mode in results buffers
+
+If you would like to enabled `hs-minor-mode` automatically on ES results
+buffers, use the following:
+
+```elisp
+(add-hook 'es-result-mode-hook 'hs-minor-mode)
+```
+
 ### Example
 
 You can specify requests with two different formats:
