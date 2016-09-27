@@ -373,8 +373,8 @@ the user on DELETE requests."
 
   (defvar es-query-types
     (cl-remove-if-not (lambda (c) (or (string= "filter" (es-extract-type-raw c))
-                                      (string= "query" (es-extract-type-raw c))
-                                      (string= "both" (es-extract-type-raw c))))
+                                 (string= "query" (es-extract-type-raw c))
+                                 (string= "both" (es-extract-type-raw c))))
                       es-vars)
     "Various leaf-type queries and filters"))
 
@@ -703,11 +703,16 @@ the buffer is executed from top to bottom."
 (defun es-indent-line ()
   "Indent current line as ES code. Uses the same indention as js-mode."
   (interactive)
-  (beginning-of-line)
-  ;; Dynamically bind js-indent-level so we can have our own indent
-  ;; offset if we want to.
-  (let ((js-indent-level es-indent-offset))
-    (js-indent-line))
+  (let ((empty-slash (save-excursion
+                       (beginning-of-line)
+                       (forward-char -2)
+                       (looking-at-p "/$"))))
+    (if empty-slash
+        (indent-line-to 0)
+      ;; Dynamically bind js-indent-level so we can have our own indent offset
+      ;; if we want to.
+      (let ((js-indent-level es-indent-offset))
+        (js-indent-line))))
   (when (bobp)
     (indent-line-to 0)))
 
