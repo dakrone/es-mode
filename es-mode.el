@@ -588,22 +588,22 @@ vars."
 
 (defun es-mark-request-body ()
   "Sets point to the beginning of the request body and mark at
-the end."
+the end. May modify the current point."
   (interactive)
-  (let ((p (point)))
+  (let ((p (point))
+        startpoint
+        endpoint)
     (beginning-of-line)
-    (cond ((es--at-current-header-p)
-           (re-search-forward "{\\\|^$"))
-          ((looking-at "^\\s *$")
-           (forward-line -1)))
-    (ignore-errors
-      (while t
-        (backward-up-list)))
-    (if (looking-at "{")
-        (mark-sexp)
-      (goto-char p)
-      (forward-line 1)
-      (set-mark (point)))))
+    (forward-line 1)
+    (es-goto-previous-request)
+    (forward-line 1)
+    (setq startpoint (point))
+    (if (es-goto-next-request)
+        (forward-line -1)
+      (end-of-buffer))
+    (setq endpoint (point))
+    (goto-char startpoint)
+    (set-mark endpoint)))
 
 (defun es-goto-previous-request ()
   "Advance the point to the previous parameter declaration, if
@@ -623,8 +623,9 @@ available. Returns truthy if one was found, nil otherwise."
     (beginning-of-line)))
 
 (defmacro es-save-everything (&rest args)
-  `(,(if (fboundp
-          'save-mark-and-excursion) 'save-mark-and-excursion 'save-excursion)
+  `(,(if (fboundp 'save-mark-and-excursion)
+         'save-mark-and-excursion
+       'save-excursion)
     ,@args))
 
 (defun es-execute-request-dwim (prefix)
@@ -773,6 +774,9 @@ the buffer is executed from top to bottom."
 
   (make-local-variable 'es-endpoint-url)
   (make-local-variable 'es-request-method)
+
+  ;; Required to make bulk requests without a training newline work
+  (setq-local require-final-newline t)
 
   ;; If we have company-mode we use it.
   (when (boundp 'company-backends)
