@@ -619,10 +619,11 @@ available. Returns truthy if one was found, nil otherwise."
   (interactive)
   ;; Go forward 1 char so being at a request doesn't keep the cursor at the
   ;; request permanently.
-  (forward-char 1)
-  (prog1
-      (re-search-forward es--method-url-regexp (point-max) t)
-    (beginning-of-line)))
+  (when (not (eobp))
+    (forward-char 1)
+    (prog1
+        (re-search-forward es--method-url-regexp (point-max) t)
+      (beginning-of-line))))
 
 (defmacro es-save-everything (&rest args)
   `(,(if (fboundp 'save-mark-and-excursion)
