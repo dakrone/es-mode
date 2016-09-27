@@ -580,6 +580,8 @@ vars."
       (url-retrieve url 'es-result--handle-response (list result-buffer-name))
       (setq es-results-buffer (get-buffer-create result-buffer-name))
       (save-selected-window
+        ;; We want 2 buffers next to each other, so delete other buffers
+        (delete-other-windows)
         (view-buffer-other-window es-results-buffer)))))
 
 (defun es--at-current-header-p ()
@@ -600,7 +602,7 @@ the end. May modify the current point."
     (setq startpoint (point))
     (if (es-goto-next-request)
         (forward-line -1)
-      (end-of-buffer))
+      (goto-char (point-max)))
     (setq endpoint (point))
     (goto-char startpoint)
     (set-mark endpoint)))
