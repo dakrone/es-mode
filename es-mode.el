@@ -660,6 +660,7 @@ the buffer is executed from top to bottom."
 (defvar es-result-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-r") 'es-result-show-response)
+    (define-key map (kbd "q") 'bury-buffer)
     map)
   "Keymap for `es-result-mode'")
 
