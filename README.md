@@ -97,7 +97,7 @@ POST myindex/_search?pretty
 If you do not want to specify `?pretty` every time, you can customize the
 `es-always-pretty-print` var (defaults to `nil`).
 
-#### Without parameters
+#### Without parameters (deprecated)
 
 Without any parameters, you can specify a request:
 
@@ -113,6 +113,9 @@ With the request region highlighted or inside the query structure, hit `C-c C-c`
 to execute it. The first time you do this you will be prompted for the URL and
 HTTP method. You can also set the URL with `C-c C-u` and the method with `C-c
 C-m`.
+
+This is deprecated in favor of the sense/console-like syntax, as it increases
+complexity for maintaining es-mode.
 
 #### Screenshot
 
