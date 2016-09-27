@@ -1,4 +1,5 @@
 ;;; es-mode.el --- A major mode for editing Elasticsearch queries
+;; -*- coding: utf-8; lexical-binding: t; -*-
 
 ;; Copyright (C) 2014 Matthew Lee Hinman
 ;; Copyright (C) 2014 Bjarte Johansen
