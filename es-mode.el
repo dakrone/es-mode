@@ -580,9 +580,11 @@ vars."
       (url-retrieve url 'es-result--handle-response (list result-buffer-name))
       (setq es-results-buffer (get-buffer-create result-buffer-name))
       (save-selected-window
-        ;; We want 2 buffers next to each other, so delete other buffers
-        (delete-other-windows)
-        (view-buffer-other-window es-results-buffer)))))
+        ;; We want 2 buffers next to each other if it's not already visible, so
+        ;; delete other buffers
+        (when (not (get-buffer-window es-results-buffer))
+          (delete-other-windows)
+          (view-buffer-other-window es-results-buffer))))))
 
 (defun es--at-current-header-p ()
   "Returns t if at on a header line, nil otherwise."
