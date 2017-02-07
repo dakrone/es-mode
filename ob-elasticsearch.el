@@ -74,8 +74,7 @@ Does not move the point."
          (url-request-method (car params))
          (url (es--munge-url (cdr params)))
          (url-request-extra-headers
-          '(("Content-Type" .
-             "application/x-www-form-urlencoded; charset=UTF-8")))
+          '(("Content-Type" . "application/json; charset=UTF-8")))
          (url-request-data (encode-coding-string
                             (buffer-substring (region-beginning)
                                               (region-end))

@@ -562,8 +562,7 @@ vars."
   (let* ((beg (if (region-active-p) (region-beginning) (point-min)))
          (end (if (region-active-p) (region-end) (point-max)))
          (url-request-extra-headers
-          '(("Content-Type" .
-             "application/x-www-form-urlencoded; charset=UTF-8")))
+          '(("Content-Type" . "application/json; charset=UTF-8")))
          (params (or (es--find-params)
                      `(,(es-get-request-method) . ,(es-get-url))))
          (url (es--munge-url (cdr params)))
