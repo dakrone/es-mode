@@ -51,6 +51,8 @@ automatically load..
 - Support for "es" mode blocks in org-mode
 - Pass the resulting JSON through [jq](https://stedolan.github.io/jq/) to return
   only the values you want in org-mode
+- Displays warning headers from Elasticsearch in the results buffers for
+  deprecated features
 
 #### Using hide-show mode in results buffers
 

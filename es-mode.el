@@ -496,9 +496,19 @@ in which case it prompts the user."
     (annotation (es-extract-type arg))
     (meta (es-extract-summary arg))))
 
+(defun es-extract-warnings ()
+  "Extract the warning headers from the current buffer. Assumes
+  the buffer contains the result of a `url-retrieve' request."
+  (goto-char (point-min))
+  (when (re-search-forward "Warning: " (point-max) t)
+    (let ((start (point))
+          (end (progn (end-of-line) (point))))
+      (buffer-substring-no-properties start end))))
+
 (defun es-result--handle-response (status &optional results-buffer-name)
   "Handles the response from the server returns after sending a query."
   (let ((http-results-buffer (current-buffer))
+        (http-warnings (es-extract-warnings))
         (http-status-code url-http-response-status)
         (http-content-type url-http-content-type)
         (http-content-length url-http-content-length))
@@ -514,6 +524,10 @@ in which case it prompts the user."
             (insert "ERROR: Could not connect to server.")
             (setq mode-name (format "ES[failed]")))
         (es-result-mode)
+        (when http-warnings
+          (insert "// Warning: "
+                  http-warnings
+                  "\n"))
         (url-insert http-results-buffer)
         (cond
          ((and (>= http-status-code 200) (<= http-status-code 299))

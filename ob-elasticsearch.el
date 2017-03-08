@@ -82,7 +82,8 @@ Does not move the point."
     (when (es--warn-on-delete-yes-or-no-p)
       (message "Issuing %s against %s [jq=%s, tablify=%s]"
                url-request-method url jq-header tablify)
-      (let* ((buffer (url-retrieve-synchronously url)))
+      (let* ((buffer (url-retrieve-synchronously url))
+             (http-warnings (with-current-buffer buffer (es-extract-warnings))))
         (unless (zerop (buffer-size buffer))
           (prog1
               (with-temp-buffer
@@ -91,6 +92,10 @@ Does not move the point."
                                (url-http-parse-response))
                              299))
                     (insert-buffer buffer)
+                  (when http-warnings
+                    (insert "// Warning: "
+                            http-warnings
+                            "\n"))
                   (url-insert buffer)
                   (when jq-header
                     (shell-command-on-region
