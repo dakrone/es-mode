@@ -576,11 +576,11 @@ vars."
          (url (es--munge-url (cdr params)))
          (url-request-method (car params))
          (request-data (buffer-substring-no-properties beg end)))
-    (lexical-let* ((result-buffer-name (if (zerop es--query-number)
-                                           (format "*ES: %s*" (buffer-name))
-                                         (format "*ES: %s [%d]*"
-                                                 (buffer-name)
-                                                 es--query-number))))
+    (lexical-let ((result-buffer-name (if (zerop es--query-number)
+                                          (format "*ES: %s*" (buffer-name))
+                                        (format "*ES: %s [%d]*"
+                                                (buffer-name)
+                                                es--query-number))))
       (when (es--warn-on-delete-yes-or-no-p)
         (message "Issuing %s against %s" url-request-method url)
         (request
