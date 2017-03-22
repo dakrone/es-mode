@@ -589,6 +589,7 @@ vars."
          :parser 'buffer-string
          :headers '(("Content-Type" . "application/json; charset=UTF-8"))
          :data (encode-coding-string request-data 'utf-8)
+         :timeout 600 ;; timeout of 10 minutes
          :complete (cl-function
                     (lambda (&key data response error-thrown &allow-other-keys)
                       (with-current-buffer (get-buffer-create result-buffer-name)
