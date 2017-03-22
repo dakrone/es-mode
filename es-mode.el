@@ -538,7 +538,7 @@ in which case it prompts the user."
         (setq mode-name "ES[failed]")
       (setq mode-name "ES[finished]"))))
 
-(defun es--warn-on-delete-yes-or-no-p ()
+(defun es--warn-on-delete-yes-or-no-p (url-request-method)
   (or (not (string= "DELETE" (upcase url-request-method)))
       (not es-warn-on-delete-query)
       (yes-or-no-p
@@ -581,11 +581,11 @@ vars."
                                         (format "*ES: %s [%d]*"
                                                 (buffer-name)
                                                 es--query-number))))
-      (when (es--warn-on-delete-yes-or-no-p)
+      (when (es--warn-on-delete-yes-or-no-p url-request-method)
         (message "Issuing %s against %s" url-request-method url)
         (request
          url
-         :type (car params)
+         :type url-request-method
          :parser 'buffer-string
          :headers '(("Content-Type" . "application/json; charset=UTF-8"))
          :data (encode-coding-string request-data 'utf-8)
