@@ -505,6 +505,39 @@ in which case it prompts the user."
           (end (progn (end-of-line) (point))))
       (buffer-substring-no-properties start end))))
 
+(defun es-result--handle-response (data response error-thrown)
+  "Handles the response from the server after sending a request."
+  (let ((buffer-read-only nil)
+        (http-warnings (request-response-header response "warning"))
+        (http-content-type (request-response-header response "content-type"))
+        (http-content-length (request-response-header response "content-length"))
+        (http-status-code (request-response-status-code response)))
+    (message "Response: Status: %S Content-Type: %S (%s bytes)"
+             http-status-code http-content-type http-content-length)
+    (erase-buffer)
+    (if error-thrown
+        (if data
+            (insert data)
+          (insert "ERROR: Could not connect to server."))
+      (when http-warnings
+        (insert "// Warning: " http-warnings "\n"))
+      (insert data))
+    (es-result-mode)
+    (cond
+     ((and (>= http-status-code 200) (<= http-status-code 299))
+      (run-hook-with-args 'es-response-success-functions
+                          http-status-code
+                          http-content-type
+                          (current-buffer)))
+     (t
+      (run-hook-with-args 'es-response-failure-functions
+                          http-status-code
+                          http-content-type
+                          (current-buffer))))
+    (if error-thrown
+        (setq mode-name "ES[failed]")
+      (setq mode-name "ES[finished]"))))
+
 (defun es--warn-on-delete-yes-or-no-p ()
   (or (not (string= "DELETE" (upcase url-request-method)))
       (not es-warn-on-delete-query)
@@ -559,41 +592,15 @@ vars."
          :complete (cl-function
                     (lambda (&key data response error-thrown &allow-other-keys)
                       (with-current-buffer (get-buffer-create result-buffer-name)
-                        (let ((buffer-read-only nil)
-                              (http-warnings (request-response-header response "warning"))
-                              (http-content-type (request-response-header response "content-type"))
-                              (http-status-code (request-response-status-code response)))
-                          (erase-buffer)
-                          (if error-thrown
-                              (if data
-                                  (insert data)
-                                (insert "ERROR: Could not connect to server."))
-                            (when http-warnings
-                              (insert "// Warning: " http-warnings "\n"))
-                            (insert data))
-                          (es-result-mode)
-                          (cond
-                           ((and (>= http-status-code 200) (<= http-status-code 299))
-                            (run-hook-with-args 'es-response-success-functions
-                                                http-status-code
-                                                http-content-type
-                                                (current-buffer)))
-                           (t
-                            (run-hook-with-args 'es-response-failure-functions
-                                                http-status-code
-                                                http-content-type
-                                                (current-buffer))))
-                          (if error-thrown
-                              (setq mode-name "ES[failed]")
-                            (setq mode-name "ES[finished]")))))))
-    (setq es-results-buffer (get-buffer result-buffer-name))
-    (save-selected-window
-      ;; We want 2 buffers next to each other if it's not already visible, so
-      ;; delete other buffers
-      (when (and es-results-buffer
-                 (not (get-buffer-window es-results-buffer)))
-        (delete-other-windows)
-        (view-buffer-other-window es-results-buffer)))))))
+                        (es-result--handle-response data response error-thrown)))))
+        (setq es-results-buffer (get-buffer result-buffer-name))
+        (save-selected-window
+          ;; We want 2 buffers next to each other if it's not already visible, so
+          ;; delete other buffers
+          (when (and es-results-buffer
+                     (not (get-buffer-window es-results-buffer)))
+            (delete-other-windows)
+            (view-buffer-other-window es-results-buffer)))))))
 
 (defun es--at-current-header-p ()
   "Returns t if at on a header line, nil otherwise."
