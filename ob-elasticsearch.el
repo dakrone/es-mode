@@ -79,7 +79,11 @@ Does not move the point."
                             (buffer-substring (region-beginning)
                                               (region-end))
                             'utf-8)))
-    (when (es--warn-on-delete-yes-or-no-p)
+    (setq url-request-data (encode-coding-string
+                            (buffer-substring (region-beginning)
+                                              (region-end))
+                            'utf-8))
+    (when (es--warn-on-delete-yes-or-no-p url-request-method)
       (message "Issuing %s against %s [jq=%s, tablify=%s]"
                url-request-method url jq-header tablify)
       (let* ((buffer (url-retrieve-synchronously url))
@@ -137,13 +141,13 @@ to do that."
                          (cdr (assoc :jq params))
                          (cdr (assoc :tablify params)))))))
       (if file
-        (with-current-buffer (find-file-noselect file)
-          (delete-region (point-min) (point-max))
-          (if (string-suffix-p ".org" file t)
-            (progn (require 'org-json)
-                   (insert (org-json-decode (json-read-from-string output) 1)))
-            (insert output))
-          (save-buffer))
+          (with-current-buffer (find-file-noselect file)
+            (delete-region (point-min) (point-max))
+            (if (string-suffix-p ".org" file t)
+                (progn (require 'org-json)
+                       (insert (org-json-decode (json-read-from-string output) 1)))
+              (insert output))
+            (save-buffer))
         output))))
 
 (provide 'ob-elasticsearch)
