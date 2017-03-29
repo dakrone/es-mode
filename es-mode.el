@@ -373,8 +373,8 @@ the user on DELETE requests."
 
   (defvar es-query-types
     (cl-remove-if-not (lambda (c) (or (string= "filter" (es-extract-type-raw c))
-                                 (string= "query" (es-extract-type-raw c))
-                                 (string= "both" (es-extract-type-raw c))))
+                                      (string= "query" (es-extract-type-raw c))
+                                      (string= "both" (es-extract-type-raw c))))
                       es-vars)
     "Various leaf-type queries and filters"))
 
