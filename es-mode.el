@@ -8,7 +8,7 @@
 ;; URL: http://www.github.com/dakrone/es-mode
 ;; Version: 4.3.0
 ;; Keywords: elasticsearch
-;; Package-Requires: ((dash "2.11.0") (cl-lib "0.5") (spark "1.0") (s "1.11.0"))
+;; Package-Requires: ((dash "2.11.0") (cl-lib "0.5") (spark "1.0") (s "1.11.0") (request "0.3.0"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -373,8 +373,8 @@ the user on DELETE requests."
 
   (defvar es-query-types
     (cl-remove-if-not (lambda (c) (or (string= "filter" (es-extract-type-raw c))
-                                 (string= "query" (es-extract-type-raw c))
-                                 (string= "both" (es-extract-type-raw c))))
+                                      (string= "query" (es-extract-type-raw c))
+                                      (string= "both" (es-extract-type-raw c))))
                       es-vars)
     "Various leaf-type queries and filters"))
 
@@ -459,8 +459,8 @@ in which case it prompts the user."
   are found."
   (save-excursion
     (if (search-backward-regexp es--method-url-regexp nil t)
-        (let ((method (match-string 1))
-              (uri (match-string 2)))
+        (let ((method (match-string-no-properties 1))
+              (uri (match-string-no-properties 2)))
           `(,method . ,(es--fix-url uri)))
       (message "Could not find <method> <url> parameters!")
       nil)))
@@ -470,7 +470,7 @@ in which case it prompts the user."
   (cl-case command
     (prefix (let ((sym (company-grab-symbol)))
               (if (string-match "\"\\(.*\\)\"?" sym)
-                  (match-string 1 sym)
+                  (match-string-no-properties 1 sym)
                 sym)))
     (candidates
      (all-completions
@@ -487,7 +487,7 @@ in which case it prompts the user."
     (prefix (and (derived-mode-p 'es-mode)
                  (let ((sym (company-grab-symbol)))
                    (if (string-match "\"\\(.*\\)\"?" sym)
-                       (match-string 1 sym)
+                       (match-string-no-properties 1 sym)
                      sym))))
     (candidates
      (cl-remove-if-not
@@ -505,44 +505,40 @@ in which case it prompts the user."
           (end (progn (end-of-line) (point))))
       (buffer-substring-no-properties start end))))
 
-(defun es-result--handle-response (status &optional results-buffer-name)
-  "Handles the response from the server returns after sending a query."
-  (let ((http-results-buffer (current-buffer))
-        (http-warnings (es-extract-warnings))
-        (http-status-code url-http-response-status)
-        (http-content-type url-http-content-type)
-        (http-content-length url-http-content-length))
-    (set-buffer
-     (get-buffer-create results-buffer-name))
+(defun es-result--handle-response (data response error-thrown)
+  "Handles the response from the server after sending a request."
+  (let ((buffer-read-only nil)
+        (http-warnings (request-response-header response "warning"))
+        (http-content-type (request-response-header response "content-type"))
+        (http-content-length (request-response-header response "content-length"))
+        (http-status-code (request-response-status-code response)))
     (message "Response: Status: %S Content-Type: %S (%s bytes)"
              http-status-code http-content-type http-content-length)
-    (let ((buffer-read-only nil))
-      (delete-region (point-min) (point-max))
-      (if (or (equal 'connection-failed (cl-cadadr status))
-              (not (numberp http-status-code)))
-          (progn
-            (insert "ERROR: Could not connect to server.")
-            (setq mode-name (format "ES[failed]")))
-        (es-result-mode)
-        (when http-warnings
-          (insert "// Warning: "
-                  http-warnings
-                  "\n"))
-        (url-insert http-results-buffer)
-        (cond
-         ((and (>= http-status-code 200) (<= http-status-code 299))
-          (run-hook-with-args 'es-response-success-functions
-                              http-status-code
-                              http-content-type
-                              (current-buffer)))
-         (t
-          (run-hook-with-args 'es-response-failure-functions
-                              http-status-code
-                              http-content-type
-                              (current-buffer))))
-        (setq mode-name "ES[finished]")))))
+    (erase-buffer)
+    (if error-thrown
+        (if data
+            (insert data)
+          (insert "ERROR: Could not connect to server."))
+      (when http-warnings
+        (insert "// Warning: " http-warnings "\n"))
+      (insert data))
+    (es-result-mode)
+    (cond
+     ((and (>= http-status-code 200) (<= http-status-code 299))
+      (run-hook-with-args 'es-response-success-functions
+                          http-status-code
+                          http-content-type
+                          (current-buffer)))
+     (t
+      (run-hook-with-args 'es-response-failure-functions
+                          http-status-code
+                          http-content-type
+                          (current-buffer))))
+    (if error-thrown
+        (setq mode-name "ES[failed]")
+      (setq mode-name "ES[finished]"))))
 
-(defun es--warn-on-delete-yes-or-no-p ()
+(defun es--warn-on-delete-yes-or-no-p (url-request-method)
   (or (not (string= "DELETE" (upcase url-request-method)))
       (not es-warn-on-delete-query)
       (yes-or-no-p
@@ -575,29 +571,37 @@ used. Uses the params if it can find them or alternativly the
 vars."
   (let* ((beg (if (region-active-p) (region-beginning) (point-min)))
          (end (if (region-active-p) (region-end) (point-max)))
-         (url-request-extra-headers
-          '(("Content-Type" . "application/json; charset=UTF-8")))
          (params (or (es--find-params)
                      `(,(es-get-request-method) . ,(es-get-url))))
          (url (es--munge-url (cdr params)))
          (url-request-method (car params))
-         (url-request-data (encode-coding-string
-                            (buffer-substring-no-properties beg end) 'utf-8))
-         (result-buffer-name (if (zerop es--query-number)
-                                 (format "*ES: %s*" (buffer-name))
-                               (format "*ES: %s [%d]*"
-                                       (buffer-name)
-                                       es--query-number))))
-    (when (es--warn-on-delete-yes-or-no-p)
-      (message "Issuing %s against %s" url-request-method url)
-      (url-retrieve url 'es-result--handle-response (list result-buffer-name))
-      (setq es-results-buffer (get-buffer-create result-buffer-name))
-      (save-selected-window
-        ;; We want 2 buffers next to each other if it's not already visible, so
-        ;; delete other buffers
-        (when (not (get-buffer-window es-results-buffer))
-          (delete-other-windows)
-          (view-buffer-other-window es-results-buffer))))))
+         (request-data (buffer-substring-no-properties beg end)))
+    (lexical-let ((result-buffer-name (if (zerop es--query-number)
+                                          (format "*ES: %s*" (buffer-name))
+                                        (format "*ES: %s [%d]*"
+                                                (buffer-name)
+                                                es--query-number))))
+      (when (es--warn-on-delete-yes-or-no-p url-request-method)
+        (message "Issuing %s against %s" url-request-method url)
+        (request
+         url
+         :type url-request-method
+         :parser 'buffer-string
+         :headers '(("Content-Type" . "application/json; charset=UTF-8"))
+         :data (encode-coding-string request-data 'utf-8)
+         :timeout 600 ;; timeout of 10 minutes
+         :complete (cl-function
+                    (lambda (&key data response error-thrown &allow-other-keys)
+                      (with-current-buffer (get-buffer-create result-buffer-name)
+                        (es-result--handle-response data response error-thrown)))))
+        (setq es-results-buffer (get-buffer result-buffer-name))
+        (save-selected-window
+          ;; We want 2 buffers next to each other if it's not already visible, so
+          ;; delete other buffers
+          (when (and es-results-buffer
+                     (not (get-buffer-window es-results-buffer)))
+            (delete-other-windows)
+            (view-buffer-other-window es-results-buffer)))))))
 
 (defun es--at-current-header-p ()
   "Returns t if at on a header line, nil otherwise."
