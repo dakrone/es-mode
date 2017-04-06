@@ -50,6 +50,7 @@
 (require 'url-handlers)
 (require 'url-parse)
 (require 'url-util)
+(require 'request)
 
 (defgroup es nil
   "Major mode for editing Elasticsearch queries."
