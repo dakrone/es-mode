@@ -66,6 +66,12 @@
   :group 'es
   :type 'string)
 
+(defcustom es-default-headers
+  '(("Content-Type" . "application/json; charset=UTF-8"))
+  "The default request headers."
+  :group 'es
+  :type 'list)
+
 (defcustom es-prompt-url nil
   "Non-nil means prompt user for requested URL on each query
   evaluation."
@@ -588,7 +594,7 @@ vars."
          url
          :type url-request-method
          :parser 'buffer-string
-         :headers '(("Content-Type" . "application/json; charset=UTF-8"))
+         :headers es-default-headers
          :data (encode-coding-string request-data 'utf-8)
          :timeout 600 ;; timeout of 10 minutes
          :complete (cl-function
