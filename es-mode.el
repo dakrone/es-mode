@@ -45,6 +45,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'cl) ;; required for lexical-let
 (require 'js)
 (require 'url)
 (require 'url-handlers)
