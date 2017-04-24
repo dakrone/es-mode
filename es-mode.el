@@ -69,7 +69,10 @@
 
 (defcustom es-default-headers
   '(("Content-Type" . "application/json; charset=UTF-8"))
-  "The default request headers."
+  "The default request headers. Note that removing the
+`Content-Type' header from this list may cause Elasticsearch to
+throw exceptions, it is recommended that you only *add* to this
+list"
   :group 'es
   :type 'list)
 
