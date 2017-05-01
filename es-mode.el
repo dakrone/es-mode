@@ -149,6 +149,41 @@ the user on DELETE requests."
   "The variable containing the response header from the result in
   a result buffer.")
 
+(defface es-request-method-face
+  '((t (:inherit font-lock-builtin-face)))
+  "Face used for highlighting HTTP verbs"
+  :group 'es-mode)
+
+(defface es-top-level-keyword-face
+  '((t (:inherit font-lock-constant-face)))
+  "Face used for highlighting top-level keywords"
+  :group 'es-mode)
+
+(defface es-keyword-face
+  '((t (:inherit font-lock-keyword-face)))
+  "Face used for highlighting ES keywords"
+  :group 'es-mode)
+
+(defface es-parent-keyword-face
+  '((t (:inherit font-lock-type-face)))
+  "Face used for highlighting ES parent keywords"
+  :group 'es-mode)
+
+(defface es-query-keyword-face
+  '((t (:inherit font-lock-function-name-face)))
+  "Face used for highlighting ES query keywords"
+  :group 'es-mode)
+
+(defface es-facet-keyword-face
+  '((t (:inherit font-lock-function-name-face)))
+  "Face used for highlighting ES facet/agg keywords"
+  :group 'es-mode)
+
+(defface es-warning-keyword-face
+  '((t (:inherit font-lock-warning-face)))
+  "Face used to highlight warning keywords"
+  :group 'es-mode)
+
 (eval-and-compile
   (defvar es-top-level-fields
     '("aggregations" "aggs" "facets" "filter"
@@ -728,38 +763,38 @@ the buffer is executed from top to bottom."
       (,(regexp-opt '("true" "false") 'word) . font-lock-constant-face)
       ;; top-level fields containing leaf nodes
       (,(concat "\"\\(" (regexp-opt es-top-level-fields) "\\)\"")
-       (1 font-lock-constant-face t))
+       (1 es-top-level-keyword-face t))
       ;; repair font-locking for http://... turning into comment.
       ("http:\\(//[^\"\n]+\\)" (1 font-lock-string-face t))
       ;; builtins for warnings
       (,(concat "^\\s-*\\("
                 (regexp-opt es-warnings)
                 "\\)\\s-+\\(http://[^[:space:]\n]+\\)")
-       (1 font-lock-warning-face t)
+       (1 es-warning-keyword-face t)
        (2 font-lock-variable-name-face t))
       ;; builtins for REST
       (,(concat "^\\s-*\\("
                 (regexp-opt es-http-builtins)
                 "\\)\\s-+\\(http://[^[:space:]\n]+\\)")
-       (1 font-lock-builtin-face t)
+       (1 es-request-method-face t)
        (2 font-lock-variable-name-face t))
       (,(concat "^\\("
                 (regexp-opt es-http-builtins-all)
                 "\\) \\([^[:space:]\n]*\\)")
-       (1 font-lock-builtin-face t)
+       (1 es-request-method-face t)
        (2 font-lock-variable-name-face t))
       ;; keywords for fields usually specified
       (,(concat "\"\\(" (regexp-opt es-keywords) "\\)\"")
-       (1 font-lock-keyword-face t))
+       (1 es-keyword-face t))
       ;; types (parent queries containing sub queries)
       (,(concat "\"\\(" (regexp-opt es-parent-types) "\\)\"")
-       (1 font-lock-type-face t))
+       (1 es-parent-keyword-face t))
       ;; query types (leaf nodes)
       (,(concat "\"\\(" (regexp-opt es-query-types) "\\)\"")
-       (1 font-lock-function-name-face t))
+       (1 es-query-keyword-face t))
       ;; facet types (leaf nodes)
       (,(concat "\"\\(" (regexp-opt es-facet-types) "\\)\"")
-       (1 font-lock-function-name-face t))))
+       (1 es-facet-keyword-face t))))
   "Highlighting expressions for ES mode")
 
 (defvar es-mode-syntax-table
