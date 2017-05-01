@@ -186,13 +186,15 @@ the user on DELETE requests."
 
 (eval-and-compile
   (defvar es-top-level-fields
-    '("aggregations" "aggs" "facets" "filter"
-      "post_filter" "query")
+    '("aggregations" "aggs" "facets" "filter" "post_filter" "query" "highlight"
+      "rescore" "scroll" "scroll_id" "indices_boost" "min_score")
     "Top-level query and filter containers"))
 
 (eval-and-compile
   (defvar es-keywords
-    '("fields" "from" "size" "highlight" "_name" "_cache" "_cache_key")
+    '("fields" "from" "size" "highlight" "_name" "_cache" "_cache_key"
+      "_source" "script_fields" "docvalue_fields" "explain" "version" "collapse"
+      "search_after" "profile")
     "Top-level fields supported by all queries")
 
   (defvar es-warnings
@@ -219,6 +221,8 @@ the user on DELETE requests."
         (:type "parent" :summary "Parent combining multiple filters/queries, prefer <bool>"))
       #("not" 0 1
         (:type "parent" :summary "Parent combining multiple filters/queries, prefer <bool>"))
+      #("constant_score" 0 1
+        (:type "parent" :summary "Parent query wrapping a filter returning a constant score value"))
 
 ;;; Both queries and filter
       #("term" 0 1
@@ -245,8 +249,6 @@ the user on DELETE requests."
         (:type "query" :summary "Query promoting or demoting results matching a query"))
       #("common" 0 1
         (:type "query" :summary "Query with cutoff for common terms"))
-      #("constant_score" 0 1
-        (:type "query" :summary "Query wrapping a filter returning a constant score value"))
       #("dis_max" 0 1
         (:type "query" :summary "Query for disjuntive max of multiple queries"))
       #("fuzzy_like_this" 0 1
@@ -279,6 +281,8 @@ the user on DELETE requests."
         (:type "query" :summary "Matches spans containing a term"))
       #("wildcard" 0 1
         (:type "query" :summary "Query matching documents that have fields matching a wildcard expression (not analyzed)"))
+      #("inner_hits" 0 1
+        (:type "query" :summary "Return the matched child or nested documents"))
       #("top_children" 0 1
         (:type "filter" :summary "Execute a child query, and out of the hit docs, aggregates it into parent docs"))
 
@@ -317,55 +321,71 @@ the user on DELETE requests."
       #("type" 0 1
         (:type "filter" :summary "Filter based on document type"))
 
-;;; Aggregations
+;;; Metric Aggregations
       #("min" 0 1
-        (:type "agg" :summary "Aggregation for minimum value"))
+        (:type "metric agg" :summary "Aggregation for minimum value"))
       #("max" 0 1
-        (:type "agg" :summary "Aggregation for maximum value"))
+        (:type "metric agg" :summary "Aggregation for maximum value"))
       #("sum" 0 1
-        (:type "agg" :summary "Aggregation for sum of values"))
+        (:type "metric agg" :summary "Aggregation for sum of values"))
       #("avg" 0 1
-        (:type "agg" :summary "Aggregation for average of values"))
+        (:type "metric agg" :summary "Aggregation for average of values"))
       #("stats" 0 1
-        (:type "agg" :summary "Aggregation calculating statistics of numeric values"))
+        (:type "metric agg" :summary "Aggregation calculating statistics of numeric values"))
       #("extended_stats" 0 1
-        (:type "agg" :summary "Aggregation calculating extended statistics of numeric values"))
+        (:type "metric agg" :summary "Aggregation calculating extended statistics of numeric values"))
       #("value_count" 0 1
-        (:type "agg" :summary "Aggregation counting number of values extracted from field"))
+        (:type "metric agg" :summary "Aggregation counting number of values extracted from field"))
       #("percentiles" 0 1
-        (:type "agg" :summary "Aggregation calculating percentiles of numeric values"))
+        (:type "metric agg" :summary "Aggregation calculating percentiles of numeric values"))
       #("percentile_ranks" 0 1
-        (:type "agg" :summary "Aggregation calculating percentile rank of numeric values"))
+        (:type "metric agg" :summary "Aggregation calculating percentile rank of numeric values"))
       #("cardinality" 0 1
-        (:type "agg" :summary "Aggregation calculating cardinality of a field"))
+        (:type "metric agg" :summary "Aggregation calculating cardinality of a field"))
       #("geo_bounds" 0 1
-        (:type "agg" :summary "Aggregation within geo bounding box"))
+        (:type "metric agg" :summary "Aggregation within geo bounding box"))
       #("top_hits" 0 1
-        (:type "agg" :summary "Aggregation of results within a bucket (join)"))
-      #("global" 0 1
-        (:type "agg" :summary "Aggregation returning all results regardless of scope"))
-      #("reverse_nested" 0 1
-        (:type "agg" :summary "Aggregation for reverse nested documents"))
-      #("terms" 0 1
-        (:type "agg" :summary "Aggregation calculating most or least common terms"))
+        (:type "metric agg" :summary "Aggregation of results within a bucket (join)"))
       #("significant_terms" 0 1
-        (:type "agg" :summary "Aggregation returning interesting or unusual occurrences of terms in a set"))
-      #("range" 0 1
-        (:type "agg" :summary "Aggregation of documents within ranges"))
-      #("date_range" 0 1
-        (:type "agg" :summary "Aggregation of documents within a date range"))
-      #("ip_range" 0 1
-        (:type "agg" :summary "Aggregation of documents within an IP address range"))
-      #("missing" 0 1
-        (:type "agg" :summary "Aggregation of documents missing a field value"))
-      #("histogram" 0 1
-        (:type "agg" :summary "Aggregation of documents within numeric slices"))
-      #("date_histogram" 0 1
-        (:type "agg" :summary "Aggregation of documents within date slices"))
-      #("filters" 0 1
-        (:type "agg" :summary "Aggregation bucketing documents into buckets defined by filters"))
+        (:type "metric agg" :summary "Aggregation returning interesting or unusual occurrences of terms in a set"))
 
-;;; Pipeline aggregations
+;;; Bucket Aggregations
+      #("global" 0 1
+        (:type "bucket agg" :summary "Aggregation returning all results regardless of scope"))
+      #("terms" 0 1
+        (:type "bucket agg" :summary "Aggregation calculating most or least common terms"))
+      #("reverse_nested" 0 1
+        (:type "bucket agg" :summary "Aggregation for reverse nested documents"))
+      #("range" 0 1
+        (:type "bucket agg" :summary "Aggregation of documents within ranges"))
+      #("date_range" 0 1
+        (:type "bucket agg" :summary "Aggregation of documents within a date range"))
+      #("ip_range" 0 1
+        (:type "bucket agg" :summary "Aggregation of documents within an IP address range"))
+      #("geohash_grid" 0 1
+        (:type "bucket agg" :summary "Aggregation that works on geo_point fields and groups points into buckets that represent cells in a grid"))
+      #("missing" 0 1
+        (:type "bucket agg" :summary "Aggregation of documents missing a field value"))
+      #("histogram" 0 1
+        (:type "bucket agg" :summary "Aggregation of documents within numeric slices"))
+      #("date_histogram" 0 1
+        (:type "bucket agg" :summary "Aggregation of documents within date slices"))
+      #("filters" 0 1
+        (:type "bucket agg" :summary "Aggregation bucketing documents into buckets defined by filters"))
+      #("sampler" 0 1
+        (:type "bucket agg" :summary "Aggregation used to limit any sub aggregations' processing to a sample of the top-scoring documents"))
+      #("diversified_sampler" 0 1
+        (:type "bucket agg" :summary "Aggregation used to limit any sub aggregations' processing to a sample of the top-scoring documents"))
+      #("children" 0 1
+        (:type "bucket agg" :summary "Aggregation that enables aggregating from buckets on parent document types to buckets on child documents"))
+
+;;; Matrix Aggregations
+      #("adjacency_matrix" 0 1
+        (:type "matrix agg" :summary "A matrix aggregation returning a form of adjacency matrix"))
+      #("matrix_stats" 0 1
+        (:type "matrix agg" :summary "A matrix aggregation calculating numeric aggregation over a set of document fields"))
+
+;;; Pipeline Aggregations
       #("avg_bucket" 0 1
         (:type "pipeline agg" :summary "Calculates the (mean) average value of a specified metric in a sibling aggregation"))
       #("derivative" 0 1
