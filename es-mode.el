@@ -567,8 +567,8 @@ in which case it prompts the user."
         (setq mode-name "ES[failed]")
       (setq mode-name "ES[finished]"))))
 
-(defun es--warn-on-delete-yes-or-no-p (url-request-method)
-  (or (not (string= "DELETE" (upcase url-request-method)))
+(defun es--warn-on-delete-yes-or-no-p (request-method)
+  (or (not (string= "DELETE" (upcase request-method)))
       (not es-warn-on-delete-query)
       (yes-or-no-p
        ;; This will not font-lock if `yes-or-no-p' is aliased to
