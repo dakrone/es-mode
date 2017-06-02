@@ -640,8 +640,7 @@ vars."
   "Sets point to the beginning of the request body and mark at
 the end. May modify the current point."
   (interactive)
-  (let ((p (point))
-        startpoint
+  (let (startpoint
         endpoint)
     (beginning-of-line)
     (forward-line 1)
