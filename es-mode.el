@@ -1,5 +1,4 @@
-;;; es-mode.el --- A major mode for editing Elasticsearch queries
-;; -*- coding: utf-8; lexical-binding: t; -*-
+;;; es-mode.el --- A major mode for editing Elasticsearch queries -*- coding: utf-8; lexical-binding: t; -*-
 
 ;; Copyright (C) 2014 Matthew Lee Hinman
 ;; Copyright (C) 2014 Bjarte Johansen
@@ -45,7 +44,6 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'cl) ;; required for lexical-let
 (require 'js)
 (require 'url)
 (require 'url-handlers)
@@ -607,7 +605,7 @@ vars."
          (url (es--munge-url (cdr params)))
          (url-request-method (car params))
          (request-data (buffer-substring-no-properties beg end)))
-    (lexical-let ((result-buffer-name (if (zerop es--query-number)
+    (let ((result-buffer-name (if (zerop es--query-number)
                                           (format "*ES: %s*" (buffer-name))
                                         (format "*ES: %s [%d]*"
                                                 (buffer-name)
