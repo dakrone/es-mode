@@ -454,18 +454,13 @@ for all the nodes for that metric."
   (es-cc-get-shards-health (buffer-name))
   (es-cc-get-nodes-stats (buffer-name)))
 
-(defun es-cc--periodic-refresh ()
+(defun es-cc--periodic-refresh (buffer-name)
   "Return a function for periodic refresh of command center
   buffer"
-  (save-window-excursion
-    (save-excursion
-      (let ((buffer-name (format "*ES-CC: %s*" es-cc-endpoint)))
-        (when (get-buffer buffer-name)
-          (set-buffer buffer-name)
-          (es-cc-refresh)
-          (setq es-cc--refresh-timer
-                (run-at-time (format "%d sec" es-cc-refresh-interval)
-                             nil 'es-cc--periodic-refresh)))))))
+  (with-current-buffer buffer-name
+    (save-window-excursion
+      (save-excursion
+        (es-cc-refresh)))))
 
 (defvar es-command-center-mode-map
   (let ((map (make-sparse-keymap)))
@@ -488,7 +483,7 @@ for all the nodes for that metric."
   "Open the Elasticsearch Command Center"
   (interactive)
   (let ((buffer-name (format "*ES-CC: %s*" es-cc-endpoint)))
-    (set-buffer
+    (switch-to-buffer
      (get-buffer-create buffer-name))
     (make-local-variable 'es-cc-endpoint)
     (make-local-variable 'es-cc--node-history)
@@ -500,11 +495,10 @@ for all the nodes for that metric."
     (let ((buffer-read-only nil))
       (delete-region (point-min) (point-max))
       (insert (format "Fetching stats [%s]..." es-cc-endpoint)))
-    (set-window-buffer nil buffer-name)
+    ;; (set-window-buffer nil buffer-name)
     (setq es-cc--refresh-timer
-          (run-at-time (format "%d sec" es-cc-refresh-interval)
-                       nil 'es-cc--periodic-refresh))
-    (es-cc-refresh)))
+          (run-at-time nil es-cc-refresh-interval
+                        'es-cc--periodic-refresh buffer-name))))
 
 (provide 'es-cc)
 ;;; es-cc.el ends here
