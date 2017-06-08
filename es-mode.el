@@ -462,7 +462,8 @@ in which case it prompts the user."
 
 (defun es--fix-url (url)
   "Transforms the URL so that we can use it to send a request."
-  (cond ((not (string-prefix-p "http://" url))
+  (cond ((and (not (string-prefix-p "http://" url t))
+              (not (string-prefix-p "https://" url t)))
          (let ((url (if (string-prefix-p "/" url)
                         url
                       (concat "/" url))))
