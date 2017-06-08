@@ -82,7 +82,7 @@ POST /myindex/_search?pretty
 
 Hitting `C-c C-c` anywhere on the parameter or body of the request will execute
 the request, opening a response buffer. The base-url can be configured by
-customizing the `es-default-base` var.
+customizing the `es-default-url` var.
 
 You also don't have to provide the leading "/", similar to Sense (I personally
 think the leading "/" looks better though), like this:

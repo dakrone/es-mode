@@ -485,7 +485,7 @@ in which case it prompts the user."
 (defun es--find-params ()
   "Search backwards to find text like \"POST /_search\",
   returning a list of method and full URL, prepending
-  `es-default-base' to the URL. Returns `false' if no parameters
+  `es-default-url' to the URL. Returns `false' if no parameters
   are found."
   (save-excursion
     (if (search-backward-regexp es--method-url-regexp nil t)
