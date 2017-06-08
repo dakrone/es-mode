@@ -462,7 +462,8 @@ in which case it prompts the user."
 
 (defun es--fix-url (url)
   "Transforms the URL so that we can use it to send a request."
-  (cond ((not (string-prefix-p "http://" url))
+  (cond ((and (not (string-prefix-p "http://" url t))
+              (not (string-prefix-p "https://" url t)))
          (let ((url (if (string-prefix-p "/" url)
                         url
                       (concat "/" url))))
@@ -484,7 +485,7 @@ in which case it prompts the user."
 (defun es--find-params ()
   "Search backwards to find text like \"POST /_search\",
   returning a list of method and full URL, prepending
-  `es-default-base' to the URL. Returns `false' if no parameters
+  `es-default-url' to the URL. Returns `false' if no parameters
   are found."
   (save-excursion
     (if (search-backward-regexp es--method-url-regexp nil t)
