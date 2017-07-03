@@ -65,7 +65,7 @@ just a normal .es file that contains the body of the block.."
                 url
                 body)))))
 
-(defun es-org-execute-request (jq-header &optional tablify)
+(defun es-org-execute-request (jq-header &optional tablify request-data)
   "Executes a request with parameters that are above the request.
 Does not move the point."
   (interactive)
@@ -75,14 +75,7 @@ Does not move the point."
          (url (es--munge-url (cdr params)))
          (url-request-extra-headers
           '(("Content-Type" . "application/json; charset=UTF-8")))
-         (url-request-data (encode-coding-string
-                            (buffer-substring (region-beginning)
-                                              (region-end))
-                            'utf-8)))
-    (setq url-request-data (encode-coding-string
-                            (buffer-substring (region-beginning)
-                                              (region-end))
-                            'utf-8))
+         (url-request-data (encode-coding-string request-data 'utf-8)))
     (when (es--warn-on-delete-yes-or-no-p url-request-method)
       (message "Issuing %s against %s [jq=%s, tablify=%s]"
                url-request-method url jq-header tablify)
@@ -125,21 +118,20 @@ to do that."
     (setq es-endpoint-url (cdr (assoc :url params)))
     (insert body)
     (beginning-of-buffer)
-    (es-mark-request-body)
-    (let ((output (when mark-active
-                    (es-org-execute-request
-                     (cdr (assoc :jq params))
-                     (cdr (assoc :tablify params)))))
+    (let ((output (es-org-execute-request
+                   (cdr (assoc :jq params))
+                   (cdr (assoc :tablify params))
+                   (es-get-request-body)))
           (file (cdr (assoc :file params))))
       (ignore-errors
         (while (es-goto-next-request)
-          (es-mark-request-body)
           (setq output
                 (concat output
                         "\n"
                         (es-org-execute-request
                          (cdr (assoc :jq params))
-                         (cdr (assoc :tablify params)))))))
+                         (cdr (assoc :tablify params))
+                         (es-get-request-body))))))
       (if file
           (with-current-buffer (find-file-noselect file)
             (delete-region (point-min) (point-max))

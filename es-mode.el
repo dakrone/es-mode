@@ -594,18 +594,15 @@ in which case it prompts the user."
 
 (defvar es--query-number 0)
 
-(defun es--execute-region ()
+(defun es--execute-string (request-data)
   "Submits the active region as a query to the specified
 endpoint. If the region is not active, the whole buffer is
 used. Uses the params if it can find them or alternativly the
 vars."
-  (let* ((beg (if (region-active-p) (region-beginning) (point-min)))
-         (end (if (region-active-p) (region-end) (point-max)))
-         (params (or (es--find-params)
+  (let* ((params (or (es--find-params)
                      `(,(es-get-request-method) . ,(es-get-url))))
          (url (es--munge-url (cdr params)))
-         (url-request-method (car params))
-         (request-data (buffer-substring-no-properties beg end)))
+         (url-request-method (car params)))
     (let ((result-buffer-name (if (zerop es--query-number)
                                           (format "*ES: %s*" (buffer-name))
                                         (format "*ES: %s [%d]*"
@@ -655,6 +652,22 @@ the end. May modify the current point."
     (goto-char startpoint)
     (set-mark endpoint)))
 
+(defun es-get-request-body ()
+  "Sets point to the beginning of the request body and mark at
+the end. May modify the current point."
+  (interactive)
+  (let (startpoint
+        endpoint)
+    (beginning-of-line)
+    (forward-line 1)
+    (es-goto-previous-request)
+    (forward-line 1)
+    (setq startpoint (point))
+    (if (es-goto-next-request)
+        (forward-line -1)
+      (goto-char (point-max)))
+    (buffer-substring-no-properties startpoint (point))))
+
 (defun es-goto-previous-request ()
   "Advance the point to the previous parameter declaration, if
 available. Returns truthy if one was found, nil otherwise."
@@ -690,13 +703,11 @@ the buffer is executed from top to bottom."
    (when prefix
      (goto-char (point-min))
      (setq es--query-number 1))
-   (es-mark-request-body)
-   (es--execute-region)
+   (es--execute-string (es-get-request-body))
    (when prefix
      (while (es-goto-next-request)
        (setq es--query-number (1+ es--query-number))
-       (es-mark-request-body)
-       (es--execute-region))
+       (es--execute-string (es-get-request-body)))
      (setq es--query-number 0))))
 
 (defun es-result-show-response ()
