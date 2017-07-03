@@ -801,6 +801,7 @@ the buffer is executed from top to bottom."
     ;; / is a punctuation character and is the first and second
     ;; character of a two letter comment starter.
     (modify-syntax-entry ?/ ". 12" st)
+    (modify-syntax-entry ?# "<" st)
     ;; newline is the end of a comment.
     (modify-syntax-entry ?\n ">" st)
     st)
