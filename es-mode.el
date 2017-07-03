@@ -849,6 +849,22 @@ the buffer is executed from top to bottom."
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.es\\'" . es-mode))
 
+(setq es-mode-snippets-dir
+      (when (and (boundp 'load-file-name) load-file-name)
+        (file-name-directory load-file-name)))
+
+;;;###autoload
+(defun es-mode-snippets-initialize ()
+  (when es-mode-snippets-dir
+    (let ((snip-dir (expand-file-name "snippets" es-mode-snippets-dir)))
+      (when (boundp 'yas-snippet-dirs)
+        (add-to-list 'yas-snippet-dirs snip-dir t))
+      (yas-load-directory snip-dir))))
+
+;;;###autoload
+(eval-after-load 'yasnippet
+   '(es-mode-snippets-initialize))
+
 (provide 'es-mode)
 
 ;;; es-mode.el ends here
