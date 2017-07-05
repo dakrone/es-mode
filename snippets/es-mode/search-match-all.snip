@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: Search: match all
+# key: search-match-all
+# --
+POST ${1:my_index}/_search?pretty
+{
+  "query": {
+    "match_all": {}
+  }
+}
