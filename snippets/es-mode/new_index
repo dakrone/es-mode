@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: Create New Index
+# key: new_index
+# group: index
+# binding: C-c i
+# --
+PUT /${1:my_index}
+{
+  "settings": {
+    $2
+  },
+  "mappings": {
+    $3
+  }
+}
