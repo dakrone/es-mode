@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: Match Query
+# key: match
+# group: search
+# --
+"match": {
+  "${1:fieldname}": {
+    "query": "$0"
+  }
+}

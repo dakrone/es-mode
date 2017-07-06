@@ -53,6 +53,8 @@ automatically load..
   only the values you want in org-mode
 - Displays warning headers from Elasticsearch in the results buffers for
   deprecated features
+- [Yasnippet](https://github.com/joaotavora/yasnippet) support with built-in
+  snippets for common operations
 
 #### Using hide-show mode in results buffers
 

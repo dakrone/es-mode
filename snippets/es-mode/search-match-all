@@ -1,8 +1,9 @@
 # -*- mode: snippet -*-
-# name: Search: match all
+# name: Search: match_all
 # key: search-match-all
+# group: search
 # --
-POST ${1:my_index}/_search?pretty
+POST /${1:my_index}/_search
 {
   "query": {
     "match_all": {}

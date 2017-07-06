@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: Match All Query
+# key: match_all
+# group: search
+# --
+"match_all": {}

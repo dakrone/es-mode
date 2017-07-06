@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: Search skeleton
+# key: _search
+# group: search
+# binding: C-c s
+# --
+POST /${1:my_index}/_search
+{
+  "query": {
+    $0
+  }
+}

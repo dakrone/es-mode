@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: Multi-Match Query
+# key: multi_match
+# group: search
+# --
+"multi_match": {
+  "fields": ["${1:fieldname}"],
+  "query": "$0"
+}

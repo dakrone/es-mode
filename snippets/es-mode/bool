@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: Bool Query
+# key: bool
+# group: search
+# --
+"bool": {
+  "must": [$1],
+  "must_not": [$2],
+  "should": [$3],
+  "filter": [$4]
+}
