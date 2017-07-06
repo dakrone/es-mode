@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: Cat Shards
+# key: cat_shards
+# group: cat
+# --
+GET /_cat/shards?v
