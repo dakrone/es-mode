@@ -857,7 +857,8 @@ the buffer is executed from top to bottom."
 (defun es-mode-snippets-initialize ()
   (when es-mode-snippets-dir
     (let ((snip-dir (expand-file-name "snippets" es-mode-snippets-dir)))
-      (when (boundp 'yas-snippet-dirs)
+      (when (and (boundp 'yas-snippet-dirs)
+                 (file-exists-p snip-dir))
         (add-to-list 'yas-snippet-dirs snip-dir t))
       (yas-load-directory snip-dir))))
 
