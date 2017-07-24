@@ -410,7 +410,7 @@ the user on DELETE requests."
 (defconst es--method-url-regexp
   (concat "^\\("
           (regexp-opt es-http-builtins-all)
-          "\\) \\(.*\\)$")
+          "\\)[[:space:]]+\\(.*\\)$")
   "A regex to get the method and url from a line.")
 
 (defun es-set-endpoint-url (new-url)
@@ -773,12 +773,12 @@ the buffer is executed from top to bottom."
       ;; builtins for REST
       (,(concat "^\\s-*\\("
                 (regexp-opt es-http-builtins)
-                "\\)\\s-+\\(http://[^[:space:]\n]+\\)")
+                "\\)[[:space:]]+\\(http://[^[:space:]\n]+\\)")
        (1 font-lock-builtin-face t)
        (2 font-lock-variable-name-face t))
       (,(concat "^\\("
                 (regexp-opt es-http-builtins-all)
-                "\\) \\([^[:space:]\n]*\\)")
+                "\\)[[:space:]]+\\([^[:space:]\n]*\\)")
        (1 font-lock-builtin-face t)
        (2 font-lock-variable-name-face t))
       ;; keywords for fields usually specified
