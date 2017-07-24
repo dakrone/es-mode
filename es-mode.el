@@ -615,7 +615,11 @@ vars."
          :type url-request-method
          :parser 'buffer-string
          :headers es-default-headers
-         :data (string-trim (encode-coding-string request-data 'utf-8))
+         :data (let* ((utf-raw (encode-coding-string request-data 'utf-8))
+                      (utf-trimmed (string-trim utf-raw)))
+                 (if (string= "" utf-trimmed)
+                     utf-trimmed
+                   utf-raw))
          :timeout 600 ;; timeout of 10 minutes
          :complete (cl-function
                     (lambda (&key data response error-thrown &allow-other-keys)
