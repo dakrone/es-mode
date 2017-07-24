@@ -36,6 +36,18 @@ repository, and `M-x package-install RET es-mode RET` to install `es-mode`.
 You can now open a file with an `.es` extension and `es-mode` will
 automatically load..
 
+#### Keyboard Shortcuts
+
+| Key | Action | Description |
+|-----|--------|-------------|
+| `C-c C-c` | es-execute-request-dwim | Execute the request you're currently on |
+| `C-c C-p` | es-goto-previous-request | Go to the previous request |
+| `C-c C-n` | es-goto-next-request | Go to the next request |
+| `C-c C-u` | es-set-endpoint-url | Set the ES endpoint requests will be executed against |
+| `C-c RET` | es-set-request-method | Set the rest method type (only for non-prefixed requests) |
+| `C-c s` | (requires `yasnippet`) | Insert a snippet for searching |
+| `C-c i` | (requires `yasnippet`) | Insert a snippet for new index creation |
+
 ### Features
 
 - Highlighting for builtin queries, facets, aggregations, special paramaters
