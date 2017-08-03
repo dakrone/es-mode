@@ -818,6 +818,7 @@ the buffer is executed from top to bottom."
     (define-key map (kbd "C-c C-c") 'es-execute-request-dwim)
     (define-key map (kbd "C-c C-u") 'es-set-endpoint-url)
     (define-key map (kbd "C-c C-m") 'es-set-request-method)
+    (define-key map (kbd "C-c M-w") 'es-copy-as)
     map)
   "Keymap for `es-mode'.")
 

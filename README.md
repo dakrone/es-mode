@@ -43,6 +43,7 @@ automatically load..
 | `C-c C-c` | es-execute-request-dwim | Execute the request you're currently on |
 | `C-c C-p` | es-goto-previous-request | Go to the previous request |
 | `C-c C-n` | es-goto-next-request | Go to the next request |
+| `C-c M-w` | es-copy-as | Copy the request as a `curl` request |
 | `C-c C-u` | es-set-endpoint-url | Set the ES endpoint requests will be executed against |
 | `C-c RET` | es-set-request-method | Set the rest method type (only for non-prefixed requests) |
 | `C-c s` | (requires `yasnippet`) | Insert a snippet for searching |
@@ -67,6 +68,8 @@ automatically load..
   deprecated features
 - [Yasnippet](https://github.com/joaotavora/yasnippet) support with built-in
   snippets for common operations
+- Ability to copy a request as a [curl](https://curl.haxx.se/) request, or other
+  type of request (customizing `es-copy-as-fn`)
 
 #### Using hide-show mode in results buffers
 
