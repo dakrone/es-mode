@@ -49,13 +49,21 @@ block.")
 (defvar org-babel-tangle-lang-exts)
 (add-to-list 'org-babel-tangle-lang-exts '("es" . "es"))
 
+(defun es-org-aget (key alist)
+  (assoc-default (intern key) alist))
+
 (defun org-babel-expand-body:es (body params)
   "This command is used by org-tangle to create a file with the
 source code of the elasticsearch block. If :tangle specifies a
 file with the .sh extension a curl-request is created instead of
 just a normal .es file that contains the body of the block.."
   (let ((ext (file-name-extension
-              (cdr (assoc :tangle params)))))
+              (cdr (assoc :tangle params))))
+        (body (s-format body 'es-org-aget
+                        (mapcar (lambda (x)
+                                  (when (eq (car x) :var)
+                                    (cdr x)))
+                                params))))
     (if (not (equal "sh" ext))
         body
       (let ((method (cdr (assoc :method params)))
@@ -116,7 +124,7 @@ to do that."
     (es-mode)
     (setq es-request-method (upcase (cdr (assoc :method params))))
     (setq es-endpoint-url (cdr (assoc :url params)))
-    (insert body)
+    (insert (org-babel-expand-body:es body params))
     (beginning-of-buffer)
     (let ((output (es-org-execute-request
                    (cdr (assoc :jq params))
