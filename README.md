@@ -343,6 +343,47 @@ path you can customize the `es-jq-path` var as you like.
 
 jq will only be run if the response is an HTTP 20[0-9].
 
+#### Variable Substitution
+
+`es-mode` includes support for variable substitution in org-babel
+source blocks.  The variable references in the body should be in the
+form `${var-name}`.
+
+```
+#+BEGIN_SRC es :var index="theindex"
+POST /${index}/_search?pretty
+{
+  "query": {
+    "match_all": {}
+  }
+}
+#+END_SRC
+```
+
+Vars can also be used to use the results from other org-babel blocks.
+
+```
+#+NAME: parent-ids
+#+BEGIN_SRC es :jq "[.hits.hits[]._source.\"parent-id\"]"
+  GET /child-docs/_search?pretty
+  {
+    "query": {
+        {"range": {"time": {"gte": "now-1M/d"}}}
+    },
+    "_source": "parent-id"
+  }
+#+END_SRC
+
+#+BEGIN_SRC es :var ids=parent-ids
+  GET /parent-docs/_search?pretty
+  {
+    "query": {
+      {"ids": {"values": ${ids}}}
+    }
+  }
+#+END_SRC
+```
+
 ### Elasticsearch Command Center
 
 `es-mode` includes a mode called the "Elasticsearch Command Center", which is
