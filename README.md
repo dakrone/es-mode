@@ -362,6 +362,16 @@ POST /${index}/_search?pretty
 
 Vars can also be used to use the results from other org-babel blocks.
 
+In the example below, the first source block searches the index
+`child-docs` for documents from the past month and `jq` is used to
+select the `parent-ids` from the hits that are returned.
+
+The second source block takes the `parent-ids` and binds it to the
+variable `ids` in the header of the source block (`:var
+ids=parent-ids`).  When the code is run `${ids}` is replaced with the
+JSON array prior to executing the search request against the
+`parent-docs` index.
+
 ```
 #+NAME: parent-ids
 #+BEGIN_SRC es :jq "[.hits.hits[]._source.\"parent-id\"]"
@@ -374,6 +384,15 @@ Vars can also be used to use the results from other org-babel blocks.
   }
 #+END_SRC
 
+#+RESULTS: parent-ids
+#+begin_example
+[
+  "id1",
+  "id2",
+  "id3"
+]
+#+end_example
+
 #+BEGIN_SRC es :var ids=parent-ids
   GET /parent-docs/_search?pretty
   {
@@ -382,6 +401,54 @@ Vars can also be used to use the results from other org-babel blocks.
     }
   }
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
+{
+  "took" : 227,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 4,
+    "successful" : 4,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 3,
+    "max_score" : 5.3673162,
+    "hits" : [
+      {
+        "_index" : "parent-docs",
+        "_type" : "t",
+        "_id" : "id1",
+        "_score" : 5.3673162,
+        "_source" : {
+          ...
+        }
+      },
+      {
+        "_index" : "parent-docs",
+        "_type" : "t",
+        "_id" : "id2",
+        "_score" : 5.3673162,
+        "_source" : {
+          ...
+        }
+      },
+      {
+        "_index" : "parent-docs",
+        "_type" : "t",
+        "_id" : "id3",
+        "_score" : 5.3673162,
+        "_source" : {
+           ...
+        }
+      }
+    ]
+  }
+}
+#+end_example
+
+
 ```
 
 ### Elasticsearch Command Center
