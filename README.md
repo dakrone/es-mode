@@ -343,6 +343,114 @@ path you can customize the `es-jq-path` var as you like.
 
 jq will only be run if the response is an HTTP 20[0-9].
 
+#### Variable Substitution
+
+`es-mode` includes support for variable substitution in org-babel
+source blocks.  The variable references in the body should be in the
+form `${var-name}`.
+
+```
+#+BEGIN_SRC es :var index="theindex"
+POST /${index}/_search?pretty
+{
+  "query": {
+    "match_all": {}
+  }
+}
+#+END_SRC
+```
+
+Vars can also be used to use the results from other org-babel blocks.
+
+In the example below, the first source block searches the index
+`child-docs` for documents from the past month and `jq` is used to
+select the `parent-ids` from the hits that are returned.
+
+The second source block takes the `parent-ids` and binds it to the
+variable `ids` in the header of the source block (`:var
+ids=parent-ids`).  When the code is run `${ids}` is replaced with the
+JSON array prior to executing the search request against the
+`parent-docs` index.
+
+```
+#+NAME: parent-ids
+#+BEGIN_SRC es :jq "[.hits.hits[]._source.\"parent-id\"]"
+  GET /child-docs/_search?pretty
+  {
+    "query": {
+        {"range": {"time": {"gte": "now-1M/d"}}}
+    },
+    "_source": "parent-id"
+  }
+#+END_SRC
+
+#+RESULTS: parent-ids
+#+begin_example
+[
+  "id1",
+  "id2",
+  "id3"
+]
+#+end_example
+
+#+BEGIN_SRC es :var ids=parent-ids
+  GET /parent-docs/_search?pretty
+  {
+    "query": {
+      {"ids": {"values": ${ids}}}
+    }
+  }
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+{
+  "took" : 227,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 4,
+    "successful" : 4,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 3,
+    "max_score" : 5.3673162,
+    "hits" : [
+      {
+        "_index" : "parent-docs",
+        "_type" : "t",
+        "_id" : "id1",
+        "_score" : 5.3673162,
+        "_source" : {
+          ...
+        }
+      },
+      {
+        "_index" : "parent-docs",
+        "_type" : "t",
+        "_id" : "id2",
+        "_score" : 5.3673162,
+        "_source" : {
+          ...
+        }
+      },
+      {
+        "_index" : "parent-docs",
+        "_type" : "t",
+        "_id" : "id3",
+        "_score" : 5.3673162,
+        "_source" : {
+           ...
+        }
+      }
+    ]
+  }
+}
+#+end_example
+
+
+```
+
 ### Elasticsearch Command Center
 
 `es-mode` includes a mode called the "Elasticsearch Command Center", which is
