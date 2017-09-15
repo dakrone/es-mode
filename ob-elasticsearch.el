@@ -51,7 +51,7 @@ block.")
 (add-to-list 'org-babel-tangle-lang-exts '("es" . "es"))
 
 (defun es-org-aget (key alist)
-  (assoc-default (intern key) alist))
+  (cdr (assoc (intern key) alist)))
 
 (defun org-babel-expand-body:es (body params)
   "This command is used by org-tangle to create a file with the
