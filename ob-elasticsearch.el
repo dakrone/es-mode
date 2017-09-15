@@ -33,6 +33,7 @@
 (require 'ob)
 (require 'es-mode)
 (require 'es-parse)
+(require 's)
 
 (defcustom es-jq-path "jq"
   "Location of the `jq' tool"
