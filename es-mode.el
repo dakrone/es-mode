@@ -403,8 +403,8 @@ the user on DELETE requests."
 
   (defvar es-query-types
     (cl-remove-if-not (lambda (c) (or (string= "filter" (es-extract-type-raw c))
-                                      (string= "query" (es-extract-type-raw c))
-                                      (string= "both" (es-extract-type-raw c))))
+                                 (string= "query" (es-extract-type-raw c))
+                                 (string= "both" (es-extract-type-raw c))))
                       es-vars)
     "Various leaf-type queries and filters"))
 
@@ -605,10 +605,10 @@ vars."
          (url (es--munge-url (cdr params)))
          (url-request-method (car params)))
     (let ((result-buffer-name (if (zerop es--query-number)
-                                          (format "*ES: %s*" (buffer-name))
-                                        (format "*ES: %s [%d]*"
-                                                (buffer-name)
-                                                es--query-number))))
+                                  (format "*ES: %s*" (buffer-name))
+                                (format "*ES: %s [%d]*"
+                                        (buffer-name)
+                                        es--query-number))))
       (when (es--warn-on-delete-yes-or-no-p url-request-method)
         (message "Issuing %s against %s" url-request-method url)
         (request
@@ -870,7 +870,7 @@ the buffer is executed from top to bottom."
 
 ;;;###autoload
 (eval-after-load 'yasnippet
-   '(es-mode-snippets-initialize))
+  '(es-mode-snippets-initialize))
 
 (provide 'es-mode)
 
