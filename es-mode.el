@@ -595,6 +595,18 @@ in which case it prompts the user."
 
 (defvar es--query-number 0)
 
+(defun es--maybe-show-results-buffer (es-results-buffer)
+  "If the es-results-buffer exists, show it in the other window
+without changing focus. Does nothing if the buffer is already
+visible or doesn't exist."
+  (save-selected-window
+    ;; We want 2 buffers next to each other if it's not already visible, so
+    ;; delete other buffers
+    (when (and es-results-buffer
+               (not (get-buffer-window es-results-buffer)))
+      (delete-other-windows)
+      (view-buffer-other-window es-results-buffer))))
+
 (defun es--execute-string (request-data)
   "Submits the active region as a query to the specified
 endpoint. If the region is not active, the whole buffer is
@@ -610,30 +622,25 @@ vars."
                                         (buffer-name)
                                         es--query-number))))
       (when (es--warn-on-delete-yes-or-no-p url-request-method)
-        (message "Issuing %s against %s" url-request-method url)
-        (request
-         url
-         :type url-request-method
-         :parser 'buffer-string
-         :headers es-default-headers
-         :data (let* ((utf-raw (encode-coding-string request-data 'utf-8))
-                      (utf-trimmed (string-trim utf-raw)))
-                 (if (string= "" utf-trimmed)
-                     utf-trimmed
-                   utf-raw))
-         :timeout 600 ;; timeout of 10 minutes
-         :complete (cl-function
-                    (lambda (&key data response error-thrown &allow-other-keys)
-                      (with-current-buffer (get-buffer-create result-buffer-name)
-                        (es-result--handle-response data response error-thrown)))))
-        (setq es-results-buffer (get-buffer result-buffer-name))
-        (save-selected-window
-          ;; We want 2 buffers next to each other if it's not already visible, so
-          ;; delete other buffers
-          (when (and es-results-buffer
-                     (not (get-buffer-window es-results-buffer)))
-            (delete-other-windows)
-            (view-buffer-other-window es-results-buffer)))))))
+        (let ((results-buffer (get-buffer-create result-buffer-name)))
+          (message "Issuing %s against %s" url-request-method url)
+          (request
+           url
+           :type url-request-method
+           :parser 'buffer-string
+           :headers es-default-headers
+           :data (let* ((utf-raw (encode-coding-string request-data 'utf-8))
+                        (utf-trimmed (string-trim utf-raw)))
+                   (if (string= "" utf-trimmed)
+                       utf-trimmed
+                     utf-raw))
+           :timeout 600 ;; timeout of 10 minutes
+           :complete (cl-function
+                      (lambda (&key data response error-thrown &allow-other-keys)
+                        (with-current-buffer results-buffer
+                          (es-result--handle-response data response error-thrown)))))
+          (setq es-results-buffer results-buffer)
+          (es--maybe-show-results-buffer es-results-buffer))))))
 
 (defun es--at-current-header-p ()
   "Returns t if at on a header line, nil otherwise."
