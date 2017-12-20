@@ -637,8 +637,9 @@ vars."
            :timeout 600 ;; timeout of 10 minutes
            :complete (cl-function
                       (lambda (&key data response error-thrown &allow-other-keys)
-                        (with-current-buffer results-buffer
-                          (es-result--handle-response data response error-thrown)))))
+                        (let ((utf-data (decode-coding-string data 'utf-8)))
+                          (with-current-buffer results-buffer
+                            (es-result--handle-response utf-data response error-thrown))))))
           (setq es-results-buffer results-buffer)
           (es--maybe-show-results-buffer es-results-buffer))))))
 
