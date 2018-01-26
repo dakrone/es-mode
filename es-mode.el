@@ -604,7 +604,6 @@ visible or doesn't exist."
     ;; delete other buffers
     (when (and es-results-buffer
                (not (get-buffer-window es-results-buffer)))
-      (delete-other-windows)
       (view-buffer-other-window es-results-buffer))))
 
 (defun es--execute-string (request-data)
