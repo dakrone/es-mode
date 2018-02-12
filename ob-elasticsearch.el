@@ -80,7 +80,7 @@ Does not move the point."
   (interactive)
   (let* ((params (or (es--find-params)
                      `(,(es-get-request-method) . ,(es-get-url))))
-         (url-request-method (car params))
+         (url-request-method (encode-coding-string (car params) 'utf-8))
          (url (es--munge-url (cdr params)))
          (url-request-extra-headers
           '(("Content-Type" . "application/json; charset=UTF-8")))
