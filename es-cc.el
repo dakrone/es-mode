@@ -462,6 +462,11 @@ for all the nodes for that metric."
       (save-excursion
         (es-cc-refresh)))))
 
+(defun es-cc--clear-timer-on-quit ()
+  (let ((buffer-name (buffer-name)))
+    (when (string-prefix-p "*ES-CC: " buffer-name)
+      (cancel-function-timers 'es-cc--periodic-refresh))))
+
 (defvar es-command-center-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "g") 'es-cc-refresh)
@@ -498,7 +503,9 @@ for all the nodes for that metric."
     ;; (set-window-buffer nil buffer-name)
     (setq es-cc--refresh-timer
           (run-at-time nil es-cc-refresh-interval
-                        'es-cc--periodic-refresh buffer-name))))
+		       'es-cc--periodic-refresh buffer-name))
+    (add-hook 'kill-buffer-hook 'es-cc--clear-timer-on-quit)))
+
 
 (provide 'es-cc)
 ;;; es-cc.el ends here
