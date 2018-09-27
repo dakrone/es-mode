@@ -745,7 +745,8 @@ the buffer is executed from top to bottom."
   (make-local-variable 'es-result-response)
   ;; Also set comment chars in results mode
   (setq-local comment-start "// ")
-  (setq-local comment-start-skip "//+[\t ]*"))
+  (setq-local comment-start-skip "//+[\t ]*")
+  (run-mode-hooks 'es-result-mode-hook))
 
 (defun es-indent-line ()
   "Indent current line as ES code. Uses the same indention as js-mode."
