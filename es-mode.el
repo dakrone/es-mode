@@ -376,6 +376,14 @@ the user on DELETE requests."
         (:type "pipeline agg" :summary "Executes a script which determines whether the current bucket will be retained in the parent multi-bucket aggregation"))
       #("serial_diff" 0 1
         (:type "pipeline agg" :summary "A technique where values in a time series are subtracted from itself at different time lags or periods"))
+
+;;; Bool
+      #("must" 0 1
+        (:type "bool" :summary "The clause (query) must appear in matching documents and will contribute to the score."))
+      #("should" 0 1
+        (:type "bool" :summary "The clause (query) can optionaly appear in the matching document and will contribute to the score."))
+      #("must_not" 0 1
+        (:type "bool" :summary "The clause (query) must not appear in the matching documents."))
       )
     "Vars used for query and filter completion"))
 
