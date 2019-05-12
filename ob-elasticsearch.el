@@ -40,13 +40,6 @@
   :group 'es
   :type 'string)
 
-(defvar org-babel-default-header-args:es
-  `((:url    . ,es-default-url)
-    (:method . ,es-default-request-method)
-    (:jq     . nil))
-  "Default arguments for evaluating an elasticsearch query
-block.")
-
 (defvar org-babel-tangle-lang-exts)
 (add-to-list 'org-babel-tangle-lang-exts '("es" . "es"))
 
@@ -123,8 +116,8 @@ set to true, this function will also ask if the user really wants
 to do that."
   (with-temp-buffer
     (es-mode)
-    (setq es-request-method (upcase (cdr (assoc :method params))))
-    (setq es-endpoint-url (cdr (assoc :url params)))
+    (setq es-request-method (upcase (or (cdr (assoc :method params)) es-default-request-method)))
+    (setq es-endpoint-url (or (cdr (assoc :url params)) es-default-url))
     (insert (org-babel-expand-body:es body params))
     (beginning-of-buffer)
     (let ((output (es-org-execute-request
