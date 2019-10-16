@@ -67,7 +67,16 @@ just a normal .es file that contains the body of the block.."
                 url
                 body)))))
 
-(defun es-org-execute-request (jq-header &optional tablify request-data)
+(defun es-org--parse-headers (headers-arg)
+  (when headers-arg
+    (mapcar (lambda (value)
+              (when (string-match "^\\([^= \f\t\n\r\v]+\\)[ \t]*=\\(.*\\)" value)
+                (cons (org-trim (match-string 1 value))
+                      (org-trim (match-string 2 value)))))
+            (org-babel-join-splits-near-ch
+             61 (org-babel-balanced-split headers-arg 32)))))
+
+(defun es-org-execute-request (jq-header &optional tablify request-data extra-headers)
   "Executes a request with parameters that are above the request.
 Does not move the point."
   (interactive)
@@ -76,7 +85,9 @@ Does not move the point."
          (url-request-method (encode-coding-string (car params) 'utf-8))
          (url (es--munge-url (cdr params)))
          (url-request-extra-headers
-          '(("Content-Type" . "application/json; charset=UTF-8")))
+          (append
+           '(("Content-Type" . "application/json; charset=UTF-8"))
+           extra-headers))
          (url-request-data (encode-coding-string request-data 'utf-8)))
     (when (es--warn-on-delete-yes-or-no-p url-request-method)
       (message "Issuing %s against %s [jq=%s, tablify=%s]"
@@ -120,11 +131,13 @@ to do that."
     (setq es-endpoint-url (or (cdr (assoc :url params)) es-default-url))
     (insert (org-babel-expand-body:es body params))
     (beginning-of-buffer)
-    (let ((output (es-org-execute-request
-                   (cdr (assoc :jq params))
-                   (cdr (assoc :tablify params))
-                   (es-get-request-body)))
-          (file (cdr (assoc :file params))))
+    (let* ((headers (es-org--parse-headers (cdr (assoc :headers params))))
+           (output (es-org-execute-request
+                    (cdr (assoc :jq params))
+                    (cdr (assoc :tablify params))
+                    (es-get-request-body)
+                    headers))
+           (file (cdr (assoc :file params))))
       (ignore-errors
         (while (es-goto-next-request)
           (setq output
@@ -133,7 +146,8 @@ to do that."
                         (es-org-execute-request
                          (cdr (assoc :jq params))
                          (cdr (assoc :tablify params))
-                         (es-get-request-body))))))
+                         (es-get-request-body)
+                         headers)))))
       (if file
           (with-current-buffer (find-file-noselect file)
             (delete-region (point-min) (point-max))
