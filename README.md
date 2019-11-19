@@ -70,6 +70,7 @@ automatically load..
   snippets for common operations
 - Ability to copy a request as a [curl](https://curl.haxx.se/) request, or other
   type of request (customizing `es-copy-as-fn`)
+- Support for kibana-like triple quoting (`"""`) for request bodies
 
 #### Using hide-show mode in results buffers
 

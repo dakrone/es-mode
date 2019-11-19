@@ -615,29 +615,27 @@ visible or doesn't exist."
       (view-buffer-other-window es-results-buffer))))
 
 (defun es--serialize-request-data(_request-data)
-    "Serialize tripple-quote json to utf-8 string format"
+  "Serialize tripple-quote json to utf-8 string format"
   (let* ((_mapcar_index  0))
-	 (string-join 
-					   (mapcar
-					    (lambda(arg)
-					      (setq _mapcar_index (+ 1 _mapcar_index))
-					      (if (= (mod _mapcar_index 2) 0)
-						  (replace-regexp-in-string (regexp-quote "\"") "\\\\\""
-						  (string-join (split-string arg "\n") ""))
-						  arg) 
-					    )
-					    (split-string (concat _request-data "")  "\"\"\""))
-					   "\""))
-)
+    (string-join
+     (mapcar
+      (lambda(arg)
+        (setq _mapcar_index (+ 1 _mapcar_index))
+        (if (= (mod _mapcar_index 2) 0)
+            (replace-regexp-in-string (regexp-quote "\"") "\\\\\""
+                                      (string-join (split-string arg "\n") ""))
+          arg)
+        )
+      (split-string (concat _request-data "")  "\"\"\""))
+     "\"")))
 
 (defun es--execute-string (request-data-input)
   "Submits the active region as a query to the specified
 endpoint. If the region is not active, the whole buffer is
 used. Uses the params if it can find them or alternativly the
 vars."
-  (let* (
-	 (request-data (es--serialize-request-data request-data-input))
-	 (params (or (es--find-params)
+  (let* ((request-data (es--serialize-request-data request-data-input))
+         (params (or (es--find-params)
                      `(,(es-get-request-method) . ,(es-get-url))))
          (url (es--munge-url (cdr params)))
          (url-request-method (car params)))
