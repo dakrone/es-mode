@@ -186,7 +186,7 @@ OR (without parameters):
 
 org-mode uses the arguments `:url` and `:method` to know where and how
 to send a query. If they are not present org-mode will use
-`es-default-url` and `es-defaul-request-method` instead.
+`es-default-url` and `es-default-request-method` instead.
 
 Tangling these blocks will produce `<filename>.es`, if you specify the filename
 with `:tangle foo.sh`, es-mode will instead create a curl request for the body
