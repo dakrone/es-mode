@@ -4,10 +4,10 @@ Provides a major mode for editing ES query examples. Better highlighting and
 indention than sh-mode or js-mode.
 
 It is intended to be a mixture of the three modes as well as mimicing some of
-the highlighting from Marvel's sense console.
+the highlighting from Kibana's Dev Tools Console.
 
 You can also think of it as
-[Marvel's Sense](http://www.elasticsearch.org/guide/en/marvel/current/index.html#_sense)-envy
+[Kibana's Console](https://www.elastic.co/guide/en/kibana/current/console-kibana.html)-envy
 for Emacs users.
 
 ### Installation
@@ -87,7 +87,7 @@ You can specify requests with two different formats:
 
 #### With parameters
 
-In the document, specify parameters similar to Sense, like so:
+In the document, specify parameters similar to Console, like so:
 
 ```json
 POST /myindex/_search?pretty
@@ -102,7 +102,7 @@ Hitting `C-c C-c` anywhere on the parameter or body of the request will execute
 the request, opening a response buffer. The base-url can be configured by
 customizing the `es-default-url` var.
 
-You also don't have to provide the leading "/", similar to Sense (I personally
+You also don't have to provide the leading "/", similar to Console (I personally
 think the leading "/" looks better though), like this:
 
 ```json
@@ -134,8 +134,15 @@ to execute it. The first time you do this you will be prompted for the URL and
 HTTP method. You can also set the URL with `C-c C-u` and the method with `C-c
 C-m`.
 
-This is deprecated in favor of the sense/console-like syntax, as it increases
+This is deprecated in favor of the console-like syntax, as it increases
 complexity for maintaining es-mode.
+
+#### Self signed certificates
+
+If your ES endpoint has TLS enabled with self signed certificates (this is insecure!) you'll need to make `curl` ignore those. There are two ways:
+
+1. Specify `--insecure` in the Emacs variable `request-curl-options`.
+2. Create a `~/.curlrc` containing `--insecure` (see [the curl man page](https://curl.haxx.se/docs/manpage.html)).
 
 #### Screenshot
 
