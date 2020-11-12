@@ -86,7 +86,7 @@ Does not move the point."
          (url (es--munge-url (cdr params)))
          (url-request-extra-headers
           (append
-           '(("Content-Type" . "application/json; charset=UTF-8"))
+           es-default-headers
            extra-headers))
          (url-request-data (encode-coding-string request-data 'utf-8)))
     (when (es--warn-on-delete-yes-or-no-p url-request-method)
