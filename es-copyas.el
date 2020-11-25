@@ -58,12 +58,22 @@ request can span multiple (quoted) lines."
                      `(,(es-get-request-method) . ,(es-get-url))))
          (url (es--munge-url (cdr params)))
          (url-request-method (car params)))
-    (kill-new
-     (format "curl -H \"Content-Type: application/json\" -X%s \"%s\" -d'%s'"
-             url-request-method url
-             (if es-copy-as-single-line
-                 (replace-regexp-in-string "\n" "" fixed-body)
-               fixed-body)))))
+    (kill-new (format "curl %s -X%s \"%s\" -d'%s'"
+                      (let ((res ""))
+                        (dolist (h es-default-headers)
+                          (setq res (concat res
+                                            " -H \""
+                                            (car h)
+                                            ": "
+                                            (cdr h)
+                                            "\"")))
+                        res)
+                      url-request-method
+                      url
+                      (if es-copy-as-single-line
+                          (replace-regexp-in-string "\n" "" fixed-body)
+                        fixed-body)))))
+
 
 (defun es-copy-as-wget ()
   (error "Not implemented yet!"))
