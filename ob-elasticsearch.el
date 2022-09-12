@@ -127,6 +127,7 @@ set to true, this function will also ask if the user really wants
 to do that."
   (with-temp-buffer
     (es-mode)
+    (hack-dir-local-variables-non-file-buffer)
     (setq es-request-method (upcase (or (cdr (assoc :method params)) es-default-request-method)))
     (setq es-endpoint-url (or (cdr (assoc :url params)) es-default-url))
     (insert (org-babel-expand-body:es body params))
