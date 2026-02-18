@@ -1,0 +1,51 @@
+#!/usr/bin/env bb
+
+(require '[babashka.http-client :as http])
+(require '[cheshire.core :as json])
+(require '[clojure.java.io :as io])
+(require '[babashka.cli :as cli])
+
+(def cli-options {:U {:default "elastic"}
+                  :P {:default "password"}
+                  :S {:default "http://localhost:9200"}})
+
+(def *url* (atom "http://localhost:9200"))
+
+(def *user* (atom "elastic"))
+
+(def *pass* (atom "password"))
+
+(def PROMPT "esql> ")
+
+(defn get-url [url body]
+  (http/post url {:basic-auth [@*user* @*pass*]
+                  :headers {:content-type "application/json"}
+                  :query-params {:format "txt"
+                                 :allow_partial_results true}
+                  :throw false
+                  :body (json/encode {:query body})}))
+
+(defn invoke-cmd [cmd]
+  (println "Issuing request for" (str "[" cmd "]..."))
+  (println (:body (get-url (str @*url* "/_query") cmd))))
+
+(defn repl []
+  (print PROMPT)
+  (flush)
+  (doseq [line (line-seq (io/reader *in*))]
+    (try
+      (invoke-cmd line)
+      (catch java.net.ConnectException e
+          (println "Unable to connect to" @*url*)))
+    (print PROMPT)
+    (flush)))
+
+(let [cli-opts (cli/parse-opts *command-line-args* {:spec cli-options})
+      user (:U cli-opts)
+      pass (:P cli-opts)
+      url (:S cli-opts)]
+  (reset! *url* url)
+  (reset! *user* user)
+  (reset! *pass* pass)
+  (println (str "Connecting to [" @*url* "] as user [" @*user* "]..."))
+  (repl))
