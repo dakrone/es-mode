@@ -33,10 +33,11 @@
   (print PROMPT)
   (flush)
   (doseq [line (line-seq (io/reader *in*))]
-    (try
-      (invoke-cmd line)
-      (catch java.net.ConnectException e
-          (println "Unable to connect to" @*url*)))
+    (when-not (clojure.string/blank? line)
+      (try
+        (invoke-cmd line)
+        (catch java.net.ConnectException e
+          (println "Unable to connect to" @*url*))))
     (print PROMPT)
     (flush)))
 
