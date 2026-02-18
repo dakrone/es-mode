@@ -1,9 +1,11 @@
 #!/usr/bin/env bb
 
-(require '[babashka.http-client :as http])
-(require '[cheshire.core :as json])
-(require '[clojure.java.io :as io])
-(require '[babashka.cli :as cli])
+(require '[babashka.cli :as cli]
+         '[babashka.http-client :as http]
+         '[clojure.java.io :as io]
+         '[cheshire.core :as json])
+(import '[org.jline.terminal TerminalBuilder]
+        '[org.jline.reader LineReaderBuilder])
 
 (def cli-options {:U {:default "elastic"}
                   :P {:default "password"}
@@ -30,16 +32,23 @@
   (println (:body (get-url (str @*url* "/_query") cmd))))
 
 (defn repl []
-  (print PROMPT)
-  (flush)
-  (doseq [line (line-seq (io/reader *in*))]
-    (when-not (clojure.string/blank? line)
-      (try
-        (invoke-cmd line)
-        (catch java.net.ConnectException e
-          (println "Unable to connect to" @*url*))))
-    (print PROMPT)
-    (flush)))
+  (let [terminal (-> (TerminalBuilder/builder) (.build))
+        reader   (-> (LineReaderBuilder/builder)
+                   (.terminal terminal)
+                   (.build))]
+   (try
+     (loop []
+       (when-let [line (.readLine reader PROMPT)]
+         (when-not (clojure.string/blank? line)
+           (try
+             (invoke-cmd line)
+             (catch java.net.ConnectException e
+               (println "Unable to connect to" @*url*))))
+         (recur)))
+     (catch org.jline.reader.EndOfFileException _
+       (println "Goodbye!"))
+     (finally
+       (.close terminal)))))
 
 (let [cli-opts (cli/parse-opts *command-line-args* {:spec cli-options})
       user (:U cli-opts)
