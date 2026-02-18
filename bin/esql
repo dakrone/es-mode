@@ -23,7 +23,8 @@
   (http/post url {:basic-auth [@*user* @*pass*]
                   :headers {:content-type "application/json"}
                   :query-params {:format "txt"
-                                 :allow_partial_results true}
+                                 :allow_partial_results true
+                                 :pretty true}
                   :throw false
                   :body (json/encode {:query body})}))
 
