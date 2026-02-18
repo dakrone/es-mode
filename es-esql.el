@@ -47,6 +47,74 @@
      . font-lock-keyword-face))
   "Elasticsearch ES|QL keywords used by font-lock.")
 
+(defvar es-esql-mode-font-lock-keywords
+  (eval-when-compile
+    (list
+     ;; Passthrough commands
+     '("^[.].*$" . font-lock-doc-face)
+     ;; Comments starting with //
+     '("[//].*$" . font-lock-comment-face)
+     '("/\*.*\*/" . font-lock-comment-face)
+
+     ;; ES|QL Keywords
+     (sql-font-lock-keywords-builder 'font-lock-keyword-face nil
+                                     "change_point" "completion" "dissect" "drop" "enrich" "eval"
+                                     "fork" "from" "fuse" "grok" "inline stats" "keep" "limit"
+                                     "lookup join" "mv_expand" "rename" "rerank" "row" "sample"
+                                     "set" "show" "sort" "stats" "ts" "uri_parts" "where"
+                                     )
+     ;; ES|QL Data types
+     (sql-font-lock-keywords-builder 'font-lock-type-face nil
+                                     "integer" "double" "float" "boolean" "date"
+                                     )
+     ;; ES|QL Functions
+     (sql-font-lock-keywords-builder 'font-lock-builtin-face nil
+                                     "abs" "absent" "absent_over_time" "acos" "acosh" "asin" "asinh"
+                                     "atan" "atan2" "atanh" "avg" "avg_over_time" "bit_length" "bucket"
+                                     "byte_length" "case" "categorize" "cbrt" "ceil" "chunk" "cidr_match"
+                                     "clamp" "clamp_max" "clamp_min" "coalesce" "concat" "contains"
+                                     "copy_sign" "cos" "cosh" "count" "count_distinct"
+                                     "count_distinct_over_time" "count_over_time" "date_diff"
+                                     "date_extract" "date_format" "date_parse" "date_trunc" "day_name"
+                                     "decay" "delta" "deriv" "e" "ends_with" "exp" "first"
+                                     "first_over_time" "floor" "from_base64" "greatest" "hash" "hypot"
+                                     "idelta" "increase" "ip_prefix" "irate" "knn" "kql" "last"
+                                     "last_over_time" "least" "left" "length" "locate" "log" "log10"
+                                     "ltrim" "match" "match_phrase" "max" "max_over_time" "md5" "median"
+                                     "median_absolute_deviation" "min" "min_over_time" "month_name"
+                                     "mv_append" "mv_avg" "mv_concat" "mv_contains" "mv_count"
+                                     "mv_dedupe" "mv_first" "mv_intersection" "mv_intersects" "mv_last"
+                                     "mv_max" "mv_median" "mv_median_absolute_deviation" "mv_min"
+                                     "mv_percentile" "mv_pseries_weighted_sum" "mv_slice" "mv_sort"
+                                     "mv_sum" "mv_union" "mv_zip" "now" "percentile"
+                                     "percentile_over_time" "pi" "pow" "present" "present_over_time"
+                                     "qstr" "rate" "repeat" "replace" "reverse" "right" "round"
+                                     "round_to" "rtrim" "sample" "scalb" "score" "sha1" "sha256"
+                                     "signum" "sin" "sinh" "space" "split" "sqrt" "starts_with"
+                                     "stddev_over_time" "std_dev" "st_centroid_agg" "st_contains"
+                                     "st_disjoint" "st_distance" "st_envelope" "st_extent_agg"
+                                     "st_geohash" "st_geohex" "st_geotile" "st_intersects" "st_npoints"
+                                     "st_simplify" "st_within" "st_x" "st_xmax" "st_xmin" "st_y"
+                                     "st_ymax" "st_ymin" "substring" "sum" "sum_over_time" "tan" "tanh"
+                                     "tau" "tbucket" "text_embedding" "top" "top_snippets"
+                                     "to_aggregate_metric_double" "to_base64" "to_boolean"
+                                     "to_cartesianpoint" "to_cartesianshape" "to_dateperiod"
+                                     "to_datetime" "to_date_nanos" "to_degrees" "to_dense_vector"
+                                     "to_double" "to_geohash" "to_geohex" "to_geopoint" "to_geoshape"
+                                     "to_geotile" "to_integer" "to_ip" "to_long" "to_lower"
+                                     "to_radians" "to_string" "to_timeduration" "to_unsigned_long"
+                                     "to_upper" "to_version" "trange" "trim" "url_decode" "url_encode"
+                                     "url_encode_component" "values" "variance" "variance_over_time"
+                                     "v_cosine" "v_dot_product" "v_hamming" "v_l1_norm" "v_l2_norm"
+                                     "weighted_avg")))
+
+  "Elasticsearch ES|QL keywords used by font-lock.
+
+This variable is used by `sql-mode' and `sql-interactive-mode'.  The
+regular expressions are created during compilation by calling the
+function `regexp-opt'.  Therefore, take a look at the source before
+you define your own `sql-mode-sqlite-font-lock-keywords'.")
+
 (sql-set-product-feature 'esql
                          :font-lock
                          'es-esql-mode-font-lock-keywords)
