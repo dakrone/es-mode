@@ -13,11 +13,15 @@
 
 ;;; Commentary:
 
-;; TODO: fill me in
+;; This library provides an `sqli' interface to Elasticsearch's ES|QL. This allows typing ESQL
+;; commands in an interactive comint buffer that are executed and shown in tablular form.
 
 ;;; Usage:
 
-;; TODO: fill me in
+;; Require this file, and then use the `es-esql' command to open an interactive session for ESQL
+;; commands. Note that the `esql' binary should be on the path (or customize `es-esql-program' to be
+;; the fully-qualified path), and that the `esql' command requires that Babashka
+;; (https://babashka.org/) tool is installed to work correctly.
 
 ;;; License:
 
