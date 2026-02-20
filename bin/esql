@@ -1,8 +1,5 @@
 #!/usr/bin/env bb
 
-;; Attempt to use a dumb terminal
-(System/setProperty "TERM" "dumb-color")
-
 (require '[babashka.cli :as cli]
          '[babashka.http-client :as http]
          '[clojure.java.io :as io]
@@ -36,7 +33,7 @@
   (println (:body (get-url (str @*url* "/_query") cmd))))
 
 (defn repl []
-  (let [terminal (-> (TerminalBuilder/builder) (.dumb true) (.build))
+  (let [terminal (-> (TerminalBuilder/builder) (.type "dumb-color") (.build))
         reader   (-> (LineReaderBuilder/builder)
                    (.terminal terminal)
                    (.build))]
